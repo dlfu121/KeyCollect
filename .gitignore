@@ -1,0 +1,52 @@
+# OS
+
+.DS_Store
+Thumbs.db
+
+# IDE
+
+.vscode/
+.idea/
+*.swp
+
+# Logs
+
+*.log
+logs/
+
+# Env
+
+.env
+.env.*
+
+# Python
+
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+
+# Node
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test & coverage
+
+.coverage
+.pytest_cache/
+coverage/
+htmlcov/
+
+# Misc
+
+tmp/
+temp/
+*.tmp
