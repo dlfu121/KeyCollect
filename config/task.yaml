@@ -1,0 +1,13 @@
+# Task configuration
+# Adjust object_body and door_joint to match your scene
+
+tasks:
+  open_cabinet_door:
+    type: open_cabinet_door
+    door_joint: door_hinge
+    description: "Open the cabinet door"
+
+  pick_screwdriver:
+    type: pick_screwdriver
+    object_body: screwdriver
+    description: "Pick up the screwdriver from the table"

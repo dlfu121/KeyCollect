@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lerobot-robot-mujoco"
+version = "0.1.0"
+description = "MuJoCo Robot Plugin for LeRobot 0.6.1"
+requires-python = ">=3.10"
+dependencies = [
+    "mujoco==3.11.0",
+    "numpy>=2.0",
+    "lerobot==0.6.1",
+]
+
+[project.entry-points."lerobot.robots"]
+mujoco = "lerobot_robot_mujoco.mujoco:MuJoCoRobot"
+
+[tool.setuptools.packages.find]
+include = ["lerobot_robot_mujoco*"]

@@ -1,0 +1,51 @@
+# Robot configuration for MuJoCo simulation
+# Adjust scene_path and joint names to match your robot
+
+type: mujoco
+id: rm65_dexhand
+
+scene_path: assets/scene/rm65_dexhand_scene.urdf
+
+arm_joint_names:
+  - joint_1
+  - joint_2
+  - joint_3
+  - joint_4
+  - joint_5
+  - joint_6
+
+gripper_joint_names:
+  - r_f_joint1_1
+  - r_f_joint1_2
+  - r_f_joint2_1
+  - r_f_joint2_2
+  - r_f_joint3_1
+  - r_f_joint3_2
+  - r_f_joint4_1
+  - r_f_joint4_2
+  - r_f_joint5_1
+  - r_f_joint5_2
+
+ee_site_name: link_6
+
+cameras:
+  camera_front:
+    type: opencv
+    index_or_path: 0  # placeholder
+    width: 480
+    height: 480
+    fps: 30
+
+# Simulation
+physics_dt: 0.002
+control_fps: 30
+
+# Safety
+max_joint_step: 0.1
+joint_limit_margin: 0.01
+
+# IK
+ik_damping: 0.05
+ik_max_iterations: 50
+ik_pos_tol: 0.001
+ik_ori_tol: 0.01
