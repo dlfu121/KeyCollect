@@ -12,6 +12,30 @@
 | LeRobot | 0.6.1 |
 | 显示器 | 需要可用桌面环境 |
 
+## 零、在wsl安装Ubantu24.04
+
+在Powershell中输入
+
+```bash
+wsl --install -d Ubuntu-24.04
+```
+
+设置用户名和密码后会直接进入Ubantu24.04系统，退出wsl，并且重新进入。
+
+在Powershell中继续输入
+
+```bash
+wsl --set-default Ubuntu-24.04
+```
+
+设置Ubantu24.04为默认版本，之后再输入
+
+```bash
+wsl
+```
+
+进入Ubantu24.04
+
 ## 一、安装系统依赖
 
 ```bash
