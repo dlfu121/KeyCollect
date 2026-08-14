@@ -26,7 +26,62 @@ from lerobot_robot_mujoco.simulation import MuJoCoSimulation
 from lerobot_teleoperator_keyboard_mouse import KeyboardMouseTeleop, KeyboardMouseTeleopConfig
 
 
-def has_motion(action: dict[str, float]) -> bool:
+FINGER_GROUPS = {
+    "thumb": ("r_f_joint1_1", "r_f_joint1_2"),
+    "index": ("r_f_joint2_1", "r_f_joint2_2"),
+    "middle": ("r_f_joint3_1", "r_f_joint3_2"),
+    "ring": ("r_f_joint4_1", "r_f_joint4_2"),
+    "pinky": ("r_f_joint5_1", "r_f_joint5_2"),
+    "ring_pinky": ("r_f_joint4_1", "r_f_joint4_2", "r_f_joint5_1", "r_f_joint5_2"),
+}
+
+HAND_PRESETS = {
+    "open": {
+        "thumb": (0.0, 0.0),
+        "index": (0.0, 0.0),
+        "middle": (0.0, 0.0),
+        "ring": (0.0, 0.0),
+        "pinky": (0.0, 0.0),
+    },
+    "pinch": {
+        "thumb": (1.45, 0.65),
+        "index": (0.05, 0.9),
+        "middle": (0.0, 0.05),
+        "ring": (0.0, 0.0),
+        "pinky": (0.0, 0.0),
+    },
+    "tripod": {
+        "thumb": (1.45, 0.7),
+        "index": (0.05, 0.85),
+        "middle": (0.0, 0.85),
+        "ring": (0.0, 0.1),
+        "pinky": (0.0, 0.05),
+    },
+    "power": {
+        "thumb": (1.25, 0.9),
+        "index": (0.2, 1.05),
+        "middle": (0.0, 1.1),
+        "ring": (0.2, 1.05),
+        "pinky": (0.3, 1.0),
+    },
+    "sphere": {
+        "thumb": (1.2, 0.65),
+        "index": (0.25, 0.75),
+        "middle": (0.0, 0.8),
+        "ring": (0.25, 0.75),
+        "pinky": (0.35, 0.7),
+    },
+    "key": {
+        "thumb": (1.35, 0.45),
+        "index": (0.25, 0.15),
+        "middle": (0.0, 0.45),
+        "ring": (0.15, 0.5),
+        "pinky": (0.2, 0.5),
+    },
+}
+
+
+def has_motion(action: dict[str, object]) -> bool:
     keys = (
         "delta_x",
         "delta_y",
@@ -35,20 +90,26 @@ def has_motion(action: dict[str, float]) -> bool:
         "delta_pitch",
         "delta_yaw",
         "gripper_delta",
+        "hand_delta",
     )
-    return any(abs(float(action.get(key, 0.0))) > 1e-9 for key in keys)
+    if any(abs(float(action.get(key, 0.0))) > 1e-9 for key in keys):
+        return True
+    if action.get("hand_preset") is not None:
+        return True
+    finger_deltas = action.get("finger_deltas", {})
+    return isinstance(finger_deltas, dict) and any(
+        abs(float(delta)) > 1e-9 for delta in finger_deltas.values()
+    )
 
 
 def action_to_joint_targets(
     sim: MuJoCoSimulation,
-    action: dict[str, float],
+    action: dict[str, object],
     arm_joints: list[str],
-    gripper_joints: list[str],
-    current_gripper: float,
     ee_body: str,
     damping: float = 0.08,
     max_joint_step: float = 0.04,
-) -> tuple[np.ndarray, float]:
+) -> np.ndarray:
     delta = np.array(
         [
             action.get("delta_x", 0.0),
@@ -91,10 +152,54 @@ def action_to_joint_targets(
         current_q[-1] += wrist_roll
         current_q = sim.clip_to_joint_limits(arm_joints, current_q)
 
-    current_gripper = float(
-        np.clip(current_gripper + action.get("gripper_delta", 0.0), 0.0, 0.04)
-    )
-    return current_q, current_gripper
+    return current_q
+
+
+def preset_to_hand_targets(
+    preset_name: str,
+    gripper_joints: list[str],
+) -> np.ndarray:
+    preset = HAND_PRESETS[preset_name]
+    values_by_joint = {}
+    for finger, values in preset.items():
+        for joint_name, value in zip(FINGER_GROUPS[finger], values):
+            values_by_joint[joint_name] = value
+    return np.array([values_by_joint.get(joint, 0.0) for joint in gripper_joints], dtype=np.float64)
+
+
+def apply_hand_action(
+    sim: MuJoCoSimulation,
+    action: dict[str, object],
+    gripper_joints: list[str],
+    current_hand: np.ndarray,
+    max_hand_step: float = 0.06,
+) -> np.ndarray:
+    if not gripper_joints:
+        return current_hand
+
+    desired = current_hand.copy()
+    preset_name = action.get("hand_preset")
+    if isinstance(preset_name, str) and preset_name in HAND_PRESETS:
+        desired = preset_to_hand_targets(preset_name, gripper_joints)
+
+    open_delta = float(action.get("hand_delta", action.get("gripper_delta", 0.0)))
+    if abs(open_delta) > 1e-12:
+        for i, joint in enumerate(gripper_joints):
+            if joint.endswith("_2"):
+                desired[i] -= open_delta
+
+    finger_deltas = action.get("finger_deltas", {})
+    if isinstance(finger_deltas, dict):
+        joint_to_idx = {name: idx for idx, name in enumerate(gripper_joints)}
+        for finger, open_amount in finger_deltas.items():
+            for joint in FINGER_GROUPS.get(str(finger), ()):
+                idx = joint_to_idx.get(joint)
+                if idx is not None:
+                    desired[idx] -= float(open_amount)
+
+    desired = sim.clip_to_joint_limits(gripper_joints, desired, margin=0.0)
+    limited_step = np.clip(desired - current_hand, -max_hand_step, max_hand_step)
+    return sim.clip_to_joint_limits(gripper_joints, current_hand + limited_step, margin=0.0)
 
 
 class CameraPanel:
@@ -251,14 +356,18 @@ def main() -> int:
     period = 1.0 / max(1, args.control_fps)
     start = time.monotonic()
     camera_panel = CameraPanel(sim, list(args.cameras))
-    current_gripper = 0.0
+    current_hand = sim.get_joint_positions(gripper_joints)
     if camera_panel.enabled:
         print(f"Camera panel running: {', '.join(name for name, _ in camera_panel.cameras)}")
     elif args.cameras:
         print("Camera panel disabled.")
 
     try:
-        print("Teleop running. Hold Space while pressing W/S/A/D/Q/E/Z/X/R/F.")
+        print(
+            "Teleop running. Hold Space. Arm: W/S A/D Q/E Z/X. "
+            "Hand: 1 open, 2 pinch, 3 tripod, 4 power, 5 sphere, 6 key, "
+            "R/C open, F/V close, U/J thumb, I/K index, O/L middle, P/; ring+pinky."
+        )
         while sim.sync_viewer() and teleop.is_connected and (not camera_panel.enabled or camera_panel.is_running()):
             camera_panel.update()
             teleop_action = teleop.get_action()
@@ -267,17 +376,19 @@ def main() -> int:
                 time.sleep(period)
                 continue
 
-            arm_targets, current_gripper = action_to_joint_targets(
+            arm_targets = action_to_joint_targets(
                 sim,
                 teleop_action,
                 arm_joints,
-                gripper_joints,
-                current_gripper,
                 args.ee_body,
             )
-            targets = np.concatenate(
-                [arm_targets, np.full(len(gripper_joints), current_gripper)]
+            current_hand = apply_hand_action(
+                sim,
+                teleop_action,
+                gripper_joints,
+                current_hand,
             )
+            targets = np.concatenate([arm_targets, current_hand])
             sim.set_joint_qpos(arm_joints + gripper_joints, targets)
             sim.forward()
             sim.sync_viewer()
