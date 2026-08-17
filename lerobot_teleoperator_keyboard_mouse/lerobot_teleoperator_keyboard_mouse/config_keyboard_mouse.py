@@ -18,8 +18,8 @@ class KeyboardMouseTeleopConfig(TeleoperatorConfig):
         use_gripper: Whether to include gripper control.
     """
 
-    translation_step_m: float = 0.005
-    rotation_step_rad: float = 0.03
-    gripper_step: float = 0.02
+    translation_step_m: float = 0.02
+    rotation_step_rad: float = 0.08
+    gripper_step: float = 0.05
     mouse_sensitivity: float = 1.0
     use_gripper: bool = True

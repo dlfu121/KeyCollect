@@ -24,6 +24,9 @@ if str(TELEOP_PKG) not in sys.path:
 
 from lerobot_robot_mujoco.simulation import MuJoCoSimulation
 from lerobot_teleoperator_keyboard_mouse import KeyboardMouseTeleop, KeyboardMouseTeleopConfig
+from lerobot_teleoperator_keyboard_mouse.keyboard_mouse import PYNPUT_AVAILABLE
+
+DEFAULT_STATE_PATH = ROOT / "assets" / "scenes" / "current_state.npz"
 
 
 FINGER_GROUPS = {
@@ -102,13 +105,87 @@ def has_motion(action: dict[str, object]) -> bool:
     )
 
 
+def has_all_joints(sim: MuJoCoSimulation, joint_names: list[str]) -> bool:
+    return all(
+        mujoco.mj_name2id(sim.model, mujoco.mjtObj.mjOBJ_JOINT, name) >= 0
+        for name in joint_names
+    )
+
+
+def save_state(sim: MuJoCoSimulation, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    np.savez(
+        path,
+        qpos=sim.data.qpos.copy(),
+        qvel=sim.data.qvel.copy(),
+        time=np.array([sim.data.time], dtype=np.float64),
+        scene=str(sim.scene_path),
+    )
+    print(f"Saved current state: {path}")
+
+
+class ViewerKeyTeleop:
+    """Fallback teleop driven by MuJoCo viewer key presses."""
+
+    def __init__(self, config: KeyboardMouseTeleopConfig):
+        self.config = config
+        self.is_connected = True
+        self._pending: dict[str, object] = {}
+
+    def key_callback(self, key: int) -> None:
+        step = self.config.translation_step_m
+        rot_step = self.config.rotation_step_rad
+        key_actions = {
+            glfw.KEY_W: {"delta_x": step},
+            glfw.KEY_S: {"delta_x": -step},
+            glfw.KEY_A: {"delta_y": step},
+            glfw.KEY_D: {"delta_y": -step},
+            glfw.KEY_Q: {"delta_z": step},
+            glfw.KEY_E: {"delta_z": -step},
+            glfw.KEY_Z: {"delta_roll": rot_step},
+            glfw.KEY_X: {"delta_roll": -rot_step},
+            glfw.KEY_R: {"hand_delta": self.config.gripper_step, "gripper_delta": self.config.gripper_step},
+            glfw.KEY_F: {"hand_delta": -self.config.gripper_step, "gripper_delta": -self.config.gripper_step},
+            glfw.KEY_C: {"hand_delta": self.config.gripper_step, "gripper_delta": self.config.gripper_step},
+            glfw.KEY_V: {"hand_delta": -self.config.gripper_step, "gripper_delta": -self.config.gripper_step},
+            glfw.KEY_1: {"hand_preset": "open"},
+            glfw.KEY_2: {"hand_preset": "pinch"},
+            glfw.KEY_3: {"hand_preset": "tripod"},
+            glfw.KEY_4: {"hand_preset": "power"},
+            glfw.KEY_5: {"hand_preset": "sphere"},
+            glfw.KEY_6: {"hand_preset": "key"},
+            glfw.KEY_0: {"hand_preset": "open"},
+        }
+        self._pending.update(key_actions.get(key, {}))
+
+    def get_action(self) -> dict[str, object]:
+        action = {
+            "delta_x": 0.0,
+            "delta_y": 0.0,
+            "delta_z": 0.0,
+            "delta_roll": 0.0,
+            "delta_pitch": 0.0,
+            "delta_yaw": 0.0,
+            "gripper_delta": 0.0,
+            "hand_delta": 0.0,
+            "hand_preset": None,
+            "finger_deltas": {},
+        }
+        action.update(self._pending)
+        self._pending = {}
+        return action
+
+    def disconnect(self) -> None:
+        self.is_connected = False
+
+
 def action_to_joint_targets(
     sim: MuJoCoSimulation,
     action: dict[str, object],
     arm_joints: list[str],
     ee_body: str,
-    damping: float = 0.08,
-    max_joint_step: float = 0.04,
+    damping: float = 0.04,
+    max_joint_step: float = 0.10,
 ) -> np.ndarray:
     delta = np.array(
         [
@@ -172,7 +249,7 @@ def apply_hand_action(
     action: dict[str, object],
     gripper_joints: list[str],
     current_hand: np.ndarray,
-    max_hand_step: float = 0.06,
+    max_hand_step: float = 0.12,
 ) -> np.ndarray:
     if not gripper_joints:
         return current_hand
@@ -293,7 +370,8 @@ class CameraPanel:
                 mujoco.mjtGridPos.mjGRID_TOPLEFT,
                 viewport,
                 name,
-                "",
+                "Move: W/S forward/back  A/D left/right  Q/E up/down\n"
+                "Wrist: Z/X roll    Hand: R open  F close    Presets: 1-6",
                 self.context,
             )
 
@@ -311,7 +389,12 @@ class CameraPanel:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("scene", nargs="?", default=str(ROOT / "assets" / "scene" / "rm65_dexhand_scene.urdf"), help="Path to a MuJoCo XML or URDF scene.")
+    parser.add_argument(
+        "scene",
+        nargs="?",
+        default=str(ROOT / "assets" / "scenes" / "rm65_dexhand_scene.xml"),
+        help="Path to a MuJoCo XML or URDF scene.",
+    )
     parser.add_argument(
         "--control-fps",
         type=int,
@@ -324,8 +407,13 @@ def parse_args() -> argparse.Namespace:
         default=0.0,
         help="Seconds to run before exiting. Use 0 to run until the viewer closes.",
     )
-    parser.add_argument("--cameras", nargs="*", default=["camera_front", "camera_side"], help="Camera names to show.")
+    parser.add_argument("--cameras", nargs="*", default=["table_camera", "wrist_overhead_camera"], help="Camera names to show.")
     parser.add_argument("--ee-body", default="link_6", help="Body used as the end-effector control frame.")
+    parser.add_argument("--translation-step", type=float, default=0.02, help="End-effector translation step per control tick, in meters.")
+    parser.add_argument("--rotation-step", type=float, default=0.08, help="Wrist rotation step per control tick, in radians.")
+    parser.add_argument("--hand-step", type=float, default=0.05, help="Hand open/close step per control tick, in radians.")
+    parser.add_argument("--max-joint-step", type=float, default=0.10, help="Maximum arm joint change per control tick, in radians.")
+    parser.add_argument("--state-out", type=Path, default=DEFAULT_STATE_PATH, help="Path to save the latest qpos/qvel state for tune_camera.py.")
     return parser.parse_args()
 
 
@@ -334,7 +422,6 @@ def main() -> int:
     sim = MuJoCoSimulation(args.scene)
     sim.load()
     sim.reset()
-    sim.launch_viewer()
 
     arm_joints = ["joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"]
     gripper_joints = [
@@ -350,8 +437,37 @@ def main() -> int:
         "r_f_joint5_2",
     ]
 
-    teleop = KeyboardMouseTeleop(KeyboardMouseTeleopConfig())
-    teleop.connect()
+    required_joints = arm_joints + gripper_joints
+    if not has_all_joints(sim, required_joints):
+        print(
+            "Loaded a scene-only model without the teleop robot joints. "
+            "Viewer mode only; pass a robot+scene MJCF to enable arm/hand control."
+        )
+        sim.launch_viewer()
+        start = time.monotonic()
+        try:
+            while sim.sync_viewer():
+                if args.duration > 0 and time.monotonic() - start >= args.duration:
+                    break
+                time.sleep(1.0 / max(1, args.control_fps))
+        finally:
+            sim.close()
+        return 0
+
+    teleop_config = KeyboardMouseTeleopConfig(
+        translation_step_m=args.translation_step,
+        rotation_step_rad=args.rotation_step,
+        gripper_step=args.hand_step,
+    )
+    if PYNPUT_AVAILABLE:
+        teleop = KeyboardMouseTeleop(teleop_config)
+        key_callback = None
+    else:
+        teleop = ViewerKeyTeleop(teleop_config)
+        key_callback = teleop.key_callback
+    sim.launch_viewer(key_callback=key_callback)
+    if isinstance(teleop, KeyboardMouseTeleop):
+        teleop.connect()
 
     period = 1.0 / max(1, args.control_fps)
     start = time.monotonic()
@@ -361,12 +477,20 @@ def main() -> int:
         print(f"Camera panel running: {', '.join(name for name, _ in camera_panel.cameras)}")
     elif args.cameras:
         print("Camera panel disabled.")
+    if isinstance(teleop, ViewerKeyTeleop):
+        print("pynput is not installed. Using focused MuJoCo viewer key presses for teleop.")
 
     try:
+        deadman = "Hold Space while pressing movement keys." if isinstance(teleop, KeyboardMouseTeleop) else "Focus the MuJoCo viewer window; Space is not required."
+        print("Teleop running.")
+        print(f"  Mode: {deadman}")
+        print("  Move EE: W/S forward/back, A/D left/right, Q/E up/down")
+        print("  Wrist:   Z/X roll")
+        print("  Hand:    R open, F close, 1 open, 2 pinch, 3 tripod, 4 power, 5 sphere, 6 key")
+        print("  Fingers: U/J thumb, I/K index, O/L middle, P/; ring+pinky")
         print(
-            "Teleop running. Hold Space. Arm: W/S A/D Q/E Z/X. "
-            "Hand: 1 open, 2 pinch, 3 tripod, 4 power, 5 sphere, 6 key, "
-            "R/C open, F/V close, U/J thumb, I/K index, O/L middle, P/; ring+pinky."
+            f"Speed: {args.control_fps} Hz, translation {args.translation_step:.3f} m/tick, "
+            f"rotation {args.rotation_step:.3f} rad/tick, hand {args.hand_step:.3f} rad/tick."
         )
         while sim.sync_viewer() and teleop.is_connected and (not camera_panel.enabled or camera_panel.is_running()):
             camera_panel.update()
@@ -381,12 +505,14 @@ def main() -> int:
                 teleop_action,
                 arm_joints,
                 args.ee_body,
+                max_joint_step=args.max_joint_step,
             )
             current_hand = apply_hand_action(
                 sim,
                 teleop_action,
                 gripper_joints,
                 current_hand,
+                max_hand_step=max(0.12, args.hand_step * 2.0),
             )
             targets = np.concatenate([arm_targets, current_hand])
             sim.set_joint_qpos(arm_joints + gripper_joints, targets)
@@ -399,6 +525,7 @@ def main() -> int:
 
             time.sleep(period)
     finally:
+        save_state(sim, args.state_out)
         camera_panel.close()
         teleop.disconnect()
         sim.close()

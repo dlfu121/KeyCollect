@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import mujoco
 import mujoco.viewer
@@ -66,7 +66,11 @@ class MuJoCoSimulation:
         """Reset simulation to initial state."""
         if self._model is None or self._data is None:
             raise RuntimeError("Simulation not loaded. Call load() first.")
-        mujoco.mj_resetData(self._model, self._data)
+        home_id = mujoco.mj_name2id(self._model, mujoco.mjtObj.mjOBJ_KEY, "home")
+        if home_id >= 0:
+            mujoco.mj_resetDataKeyframe(self._model, self._data, home_id)
+        else:
+            mujoco.mj_resetData(self._model, self._data)
         mujoco.mj_forward(self._model, self._data)
 
     def step(self, n_sub_steps: int = 1) -> None:
@@ -271,7 +275,12 @@ class MuJoCoSimulation:
 
     # ── On-screen Rendering ────────────────────────────────────
 
-    def launch_viewer(self, show_left_ui: bool = True, show_right_ui: bool = True) -> None:
+    def launch_viewer(
+        self,
+        show_left_ui: bool = True,
+        show_right_ui: bool = True,
+        key_callback: Callable[[int], None] | None = None,
+    ) -> None:
         """Open an interactive MuJoCo viewer window for this simulation."""
         if self._model is None or self._data is None:
             raise RuntimeError("Simulation not loaded.")
@@ -281,9 +290,15 @@ class MuJoCoSimulation:
         self._viewer = mujoco.viewer.launch_passive(
             self._model,
             self._data,
+            key_callback=key_callback,
             show_left_ui=show_left_ui,
             show_right_ui=show_right_ui,
         )
+        if hasattr(self._viewer, "cam"):
+            self._viewer.cam.lookat[:] = np.array([-0.15, 0.0, 0.8])
+            self._viewer.cam.distance = 2.4
+            self._viewer.cam.azimuth = 135.0
+            self._viewer.cam.elevation = -25.0
         self.sync_viewer()
 
     def sync_viewer(self) -> bool:

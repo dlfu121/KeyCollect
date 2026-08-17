@@ -111,7 +111,7 @@ class KeyboardMouseTeleop(Teleoperator):
             on_move=self._on_mouse_move,
             on_click=self._on_mouse_click,
             on_scroll=self._on_mouse_scroll,
-            suppress=True,
+            suppress=False,
         )
         self._kb_listener.start()
         self._mouse_listener.start()
@@ -155,7 +155,7 @@ class KeyboardMouseTeleop(Teleoperator):
         pass
 
     def _on_mouse_scroll(self, x: int, y: int, dx: int, dy: int) -> None:
-        self._mouse_scroll += dy * self.config.gripper_step
+        pass
 
     # ── Action ──────────────────────────────────────────────────
 

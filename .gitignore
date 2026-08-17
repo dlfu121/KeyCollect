@@ -12,6 +12,7 @@ Thumbs.db
 # Logs
 
 *.log
+MUJOCO_LOG.TXT
 logs/
 
 # Env
@@ -26,6 +27,8 @@ __pycache__/
 *.pyo
 .venv/
 venv/
+.matplotlib-cache/
+assets/scenes/current_state.npz
 dist/
 build/
 *.egg-info/
@@ -50,3 +53,4 @@ htmlcov/
 tmp/
 temp/
 *.tmp
+*:Zone.Identifier

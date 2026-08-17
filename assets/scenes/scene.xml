@@ -1,0 +1,173 @@
+<mujoco model="lab_scene">
+  <option timestep="0.004" integrator="implicitfast"/>
+  <compiler angle="radian"/>
+
+  <visual>
+    <global offwidth="1920" offheight="1080" elevation="-22" azimuth="135"/>
+    <rgba haze="0.14 0.16 0.20 1"/>
+    <map force="0.1" zfar="40"/>
+    <quality shadowsize="4096"/>
+  </visual>
+
+  <statistic center="-4.5 0 0.7" extent="13"/>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1=".25 .3 .38" rgb2="0 0 0" width="32" height="512"/>
+    <texture name="grid" type="2d" builtin="checker" width="512" height="512"
+             rgb1=".18 .20 .24" rgb2=".24 .27 .32"/>
+    <material name="grid" texture="grid" texrepeat="8 8" texuniform="true" reflectance=".15"/>
+    <material name="wood"   rgba="0.72 0.53 0.34 1" reflectance="0.05"/>
+    <material name="metal"  rgba="0.55 0.57 0.60 1" reflectance="0.35"/>
+    <material name="shelf"  rgba="0.80 0.82 0.85 1" reflectance="0.1"/>
+    <material name="belt"   rgba="0.20 0.20 0.22 1" reflectance="0.05"/>
+    <material name="wall"   rgba="0.86 0.87 0.88 1" reflectance="0.04"/>
+    <material name="worker" rgba="0.90 0.55 0.15 1"/>
+    <material name="skin"   rgba="0.85 0.68 0.55 1"/>
+    <material name="table_mat" rgba="0.55 0.42 0.28 1" reflectance="0.05"/>
+    <texture name="board_tex" type="2d" file="../calib_board.png"/>
+    <material name="board_mat" texture="board_tex" texrepeat="1 1" texuniform="false"/>
+  </asset>
+
+  <default>
+    <geom condim="3" friction="0.9 0.05 0.005" solref="0.008 1"/>
+  </default>
+
+  <worldbody>
+    <geom name="floor" type="plane" size="0 0 0.05" material="grid" condim="3"/>
+    <light name="top1" pos="-3 0 3.5" dir="0 0 -1" diffuse="0.6 0.6 0.6"/>
+    <light name="top2" pos="-8 0 3.5" dir="0 0 -1" diffuse="0.6 0.6 0.6"/>
+    <light name="side" pos="-4 -3 3" dir="0.3 1 -1.2" diffuse="0.4 0.4 0.4"/>
+    <camera name="overview" pos="-4.5 -11 10.5" xyaxes="1 0 0 0 0.68 0.73"/>
+    <camera name="top" pos="-4.5 0 12" xyaxes="1 0 0 0 1 0"/>
+
+    <geom name="wall_S" type="box" pos="-4.5 -3.0 1.4" size="7.5 0.1 1.4" material="wall"/>
+    <geom name="wall_N" type="box" pos="-4.5 3.0 1.4" size="7.5 0.1 1.4" material="wall"/>
+    <geom name="wall_W" type="box" pos="-12.0 0.0 1.4" size="0.1 3.0 1.4" material="wall"/>
+    <geom name="wall_E" type="box" pos="3.0 0.0 1.4" size="0.1 3.0 1.4" material="wall"/>
+
+    <!-- ================= 静态家具 ================= -->
+    <body name="bench_main" pos="0.0 0.0 0" euler="0 0 0.0">
+      <geom name="bench_main_top" type="box" pos="0 0 0.72" size="0.7 0.45 0.02" material="wood"/>
+      <geom name="bench_main_l1" type="box" pos=" 0.6499999999999999  0.4 0.35" size="0.03 0.03 0.35" material="metal"/>
+      <geom name="bench_main_l2" type="box" pos=" 0.6499999999999999 -0.4 0.35" size="0.03 0.03 0.35" material="metal"/>
+      <geom name="bench_main_l3" type="box" pos="-0.6499999999999999  0.4 0.35" size="0.03 0.03 0.35" material="metal"/>
+      <geom name="bench_main_l4" type="box" pos="-0.6499999999999999 -0.4 0.35" size="0.03 0.03 0.35" material="metal"/>
+    </body>
+    <body name="bench_S1" pos="-8.5 -2.55 0" euler="0 0 0.0">
+      <geom name="bench_S1_top" type="box" pos="0 0 0.72" size="0.8 0.35 0.02" material="wood"/>
+      <geom name="bench_S1_l1" type="box" pos=" 0.75  0.3 0.35" size="0.03 0.03 0.35" material="metal"/>
+      <geom name="bench_S1_l2" type="box" pos=" 0.75 -0.3 0.35" size="0.03 0.03 0.35" material="metal"/>
+      <geom name="bench_S1_l3" type="box" pos="-0.75  0.3 0.35" size="0.03 0.03 0.35" material="metal"/>
+      <geom name="bench_S1_l4" type="box" pos="-0.75 -0.3 0.35" size="0.03 0.03 0.35" material="metal"/>
+    </body>
+    <body name="shelf_W" pos="-11.4 1.4 0" euler="0 0 0.0">
+      <geom type="box" pos="0.42 0.19 0.8" size="0.02 0.02 0.8" material="metal"/>
+      <geom type="box" pos="0.42 -0.19 0.8" size="0.02 0.02 0.8" material="metal"/>
+      <geom type="box" pos="-0.42 0.19 0.8" size="0.02 0.02 0.8" material="metal"/>
+      <geom type="box" pos="-0.42 -0.19 0.8" size="0.02 0.02 0.8" material="metal"/>
+      <geom type="box" pos="0 0 0.05" size="0.45 0.22 0.015" material="shelf"/>
+      <geom type="box" pos="0 0 0.8" size="0.45 0.22 0.015" material="shelf"/>
+      <geom type="box" pos="0 0 1.55" size="0.45 0.22 0.015" material="shelf"/>
+    </body>
+    <!-- 东北墙角高台（桌面 1.0 m，迁自 model/camera 的标定桌）+ 棋盘格标定板 -->
+    <body name="corner_table" pos="2.25 2.35 0">
+      <geom name="corner_table_top" type="box" pos="0 0 0.98" size="0.45 0.35 0.02" material="table_mat"/>
+      <geom name="corner_table_leg_-1_-1" type="box" pos="-0.4 -0.3 0.48" size="0.03 0.03 0.48" material="table_mat"/>
+      <geom name="corner_table_leg_-1_1" type="box" pos="-0.4 0.3 0.48" size="0.03 0.03 0.48" material="table_mat"/>
+      <geom name="corner_table_leg_1_-1" type="box" pos="0.4 -0.3 0.48" size="0.03 0.03 0.48" material="table_mat"/>
+      <geom name="corner_table_leg_1_1" type="box" pos="0.4 0.3 0.48" size="0.03 0.03 0.48" material="table_mat"/>
+      <geom name="calib_board" type="box" pos="0 0 1.004" size="0.15 0.15 0.004" material="board_mat" contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- ================= 台面小道具 ================= -->
+    <geom name="prop_0" type="box" pos="-8.165 -2.587 0.82" size="0.04 0.04 0.08" rgba="0.79 0.69 0.92 1"/>
+    <geom name="prop_1" type="box" pos="-8.071 -2.335 0.82" size="0.04 0.04 0.08" rgba="0.63 0.86 0.78 1"/>
+    <geom name="prop_2" type="box" pos="-8.784 -2.432 0.79" size="0.09 0.06 0.05" rgba="0.72 0.89 0.79 1"/>
+
+    <!-- ================= 静态障碍物（走廊里） ================= -->
+    <body name="crate_1" pos="-2.2 0.7 0.25">
+      <geom type="box" size="0.3 0.25 0.25" rgba="0.76 0.60 0.42 1"/>
+    </body>
+    <body name="crate_2" pos="-6.5 0.85 0.22">
+      <geom type="box" size="0.28 0.28 0.22" rgba="0.55 0.58 0.62 1"/>
+    </body>
+    <body name="crate_3" pos="-4.7 0.9 0.3">
+      <geom type="box" size="0.24 0.2 0.3" rgba="0.35 0.62 0.45 1"/>
+    </body>
+
+    <!-- ================= 螺丝刀（主工作台上） ================= -->
+    <body name="screwdriver_red" pos="0.18 -0.18 0.756" euler="0 0 0.4">
+      <freejoint/>
+      <geom name="screwdriver_red_handle" type="cylinder" fromto="-0.045 0 0 0.03 0 0"
+            size="0.014" rgba="0.85 0.15 0.15 1" condim="6" friction="1 0.02 0.02"/>
+      <geom name="screwdriver_red_shaft" type="cylinder" fromto="0.03 0 0 0.115 0 0"
+            size="0.004" rgba="0.75 0.75 0.78 1" condim="6" friction="1 0.02 0.02"/>
+    </body>
+    <body name="screwdriver_blue" pos="-0.1 0.2 0.756" euler="0 0 -1.1">
+      <freejoint/>
+      <geom name="screwdriver_blue_handle" type="cylinder" fromto="-0.045 0 0 0.03 0 0"
+            size="0.014" rgba="0.15 0.25 0.85 1" condim="6" friction="1 0.02 0.02"/>
+      <geom name="screwdriver_blue_shaft" type="cylinder" fromto="0.03 0 0 0.115 0 0"
+            size="0.004" rgba="0.75 0.75 0.78 1" condim="6" friction="1 0.02 0.02"/>
+    </body>
+
+    <!-- ================= 工人（静态站姿，面朝主工作台） ================= -->
+    <body name="worker" pos="-10.0 0 0">
+      <geom name="w_leg_l" type="capsule" fromto="0  0.11 0.04 0  0.11 0.46" size="0.085" material="worker"/>
+      <geom name="w_leg_r" type="capsule" fromto="0 -0.11 0.04 0 -0.11 0.46" size="0.085" material="worker"/>
+      <geom name="w_torso" type="capsule" fromto="0 0 0.46 0 0 0.98" size="0.14" material="worker"/>
+      <geom name="w_head"  type="sphere"  pos="0 0 1.15" size="0.11" material="skin"/>
+      <geom name="w_arm_l" type="capsule" fromto="0 0.17 0.92 0.02 0.20 0.55" size="0.05" material="worker"/>
+      <geom name="w_arm_r" type="capsule" fromto="0 -0.17 0.92 0.02 -0.20 0.55" size="0.05" material="worker"/>
+      <geom name="w_hand_l" type="sphere" pos="0.02 0.20 0.50" size="0.045" material="skin"/>
+      <geom name="w_hand_r" type="sphere" pos="0.02 -0.20 0.50" size="0.045" material="skin"/>
+    </body>
+
+    <!-- ================= 规则运动的物体（弹簧/重力驱动，无衰减往复） ================= -->
+    <!-- 导轨（静态） -->
+    <body name="shuttle_a_rail" pos="-3.5 1.25 0.03">
+      <geom type="box" size="0.06 1.35 0.03" material="metal"/>
+    </body>
+    <!-- 料车（沿 y 往复，扫过整根导轨） -->
+    <!-- 导轨中心 y=1.25、半长1.35（覆盖 -0.1~2.6），料车半宽0.22 -->
+    <!-- 起点 y=-0.08(qpos=0)，springref=1.33 使平衡点在中心1.25，无阻尼等幅往复于 -0.08↔2.58，边缘正好扫到两端 -->
+    <body name="shuttle_a" pos="-3.5 -0.08 0.16">
+      <joint name="shuttle_a_j" type="slide" axis="0 1 0" damping="0"
+             stiffness="22.0" springref="1.33"/>
+      <geom type="box" size="0.22 0.22 0.10" rgba="0.90 0.45 0.15 1" mass="6.0"/>
+      <geom type="box" pos="0 0 0.13" size="0.20 0.20 0.03" rgba="0.90 0.45 0.15 1" mass="0.3"/>
+    </body>
+    <!-- 柜子（静态，贴南墙，双开门 + 三层挡板） -->
+    <!-- 柜宽 1.6(半0.8) 深 0.6(半0.3) 高 1.9；背面贴南墙内表面 y=-2.9 -->
+    <body name="cabinet" pos="-3.5 -2.6 0" euler="0 0 0">
+      <!-- 柜体外壳 -->
+      <geom type="box" pos="0 0 0.03"   size="0.8 0.3 0.03" material="shelf"/>  <!-- 底板 -->
+      <geom type="box" pos="0 0 1.87"   size="0.8 0.3 0.03" material="shelf"/>  <!-- 顶板 -->
+      <geom type="box" pos="0 -0.29 0.95" size="0.8 0.02 0.95" material="shelf"/> <!-- 背板 -->
+      <geom type="box" pos="0.79 0 0.95"  size="0.02 0.3 0.95" material="shelf"/> <!-- 右侧板 -->
+      <geom type="box" pos="-0.79 0 0.95" size="0.02 0.3 0.95" material="shelf"/> <!-- 左侧板 -->
+      <!-- 三层内部挡板 -->
+      <geom type="box" pos="0 -0.02 0.50" size="0.78 0.28 0.02" material="shelf"/>
+      <geom type="box" pos="0 -0.02 0.95" size="0.78 0.28 0.02" material="shelf"/>
+      <geom type="box" pos="0 -0.02 1.40" size="0.78 0.28 0.02" material="shelf"/>
+      <!-- 双开柜门（微开，朝走廊方向 +y 打开） -->
+      <body name="cabinet_door_l" pos="-0.79 0.29 0.95">
+        <geom type="box" pos="0.38 0.06 0" size="0.38 0.015 0.9"
+              euler="0 0 0.35" material="metal"/>
+      </body>
+      <body name="cabinet_door_r" pos="0.79 0.29 0.95">
+        <geom type="box" pos="-0.38 0.06 0" size="0.38 0.015 0.9"
+              euler="0 0 -0.35" material="metal"/>
+      </body>
+    </body>
+    <!-- 宽障碍物（静态挡板） -->
+    <body name="barrier_1" pos="-6.0 0.0 0.6">
+      <geom type="box" size="0.12 1.2 0.6" rgba="0.85 0.75 0.15 1"/>
+    </body>
+  </worldbody>
+
+  <!-- 每个运动部件与其自身静态支架不参与碰撞（支架只是结构，不是障碍物） -->
+  <contact>
+    <exclude body1="shuttle_a" body2="shuttle_a_rail"/>
+  </contact>
+</mujoco>

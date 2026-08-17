@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<robot name="rm65_dexhand">
+<robot name="rm65_dexhand_table_scene">
   <link name="base_link">
     <inertial>
       <origin xyz="-0.00049987 -5.2709E-05 0.060019" rpy="0 0 0" />
@@ -199,6 +199,315 @@
   <mujoco>
     <compiler angle="radian" balanceinertia="true" discardvisual="false" />
   </mujoco>
+  <link name="world" />
+  <link name="robot_stand_top">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.70 0.55 0.04" />
+      </geometry>
+      <material name="robot_stand_top_mat">
+        <color rgba="0.42 0.42 0.45 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.70 0.55 0.04" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_robot_stand_top" type="fixed">
+    <origin xyz="-0.7 0 0.58" rpy="0 0 0" />
+    <parent link="world" />
+    <child link="robot_stand_top" />
+  </joint>
+  <link name="robot_stand_leg_fl">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.06 0.06 0.58" />
+      </geometry>
+      <material name="robot_stand_leg_fl_mat">
+        <color rgba="0.32 0.32 0.35 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.06 0.06 0.58" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_robot_stand_leg_fl" type="fixed">
+    <origin xyz="-0.98 -0.22 0.29" rpy="0 0 0" />
+    <parent link="world" />
+    <child link="robot_stand_leg_fl" />
+  </joint>
+  <link name="robot_stand_leg_fr">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.06 0.06 0.58" />
+      </geometry>
+      <material name="robot_stand_leg_fr_mat">
+        <color rgba="0.32 0.32 0.35 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.06 0.06 0.58" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_robot_stand_leg_fr" type="fixed">
+    <origin xyz="-0.42 -0.22 0.29" rpy="0 0 0" />
+    <parent link="world" />
+    <child link="robot_stand_leg_fr" />
+  </joint>
+  <link name="robot_stand_leg_bl">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.06 0.06 0.58" />
+      </geometry>
+      <material name="robot_stand_leg_bl_mat">
+        <color rgba="0.32 0.32 0.35 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.06 0.06 0.58" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_robot_stand_leg_bl" type="fixed">
+    <origin xyz="-0.98 0.22 0.29" rpy="0 0 0" />
+    <parent link="world" />
+    <child link="robot_stand_leg_bl" />
+  </joint>
+  <link name="robot_stand_leg_br">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.06 0.06 0.58" />
+      </geometry>
+      <material name="robot_stand_leg_br_mat">
+        <color rgba="0.32 0.32 0.35 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.06 0.06 0.58" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_robot_stand_leg_br" type="fixed">
+    <origin xyz="-0.42 0.22 0.29" rpy="0 0 0" />
+    <parent link="world" />
+    <child link="robot_stand_leg_br" />
+  </joint>
+  <link name="work_table_top">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="1.0 0.8 0.04" />
+      </geometry>
+      <material name="work_table_top_mat">
+        <color rgba="0.50 0.45 0.40 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="1.0 0.8 0.04" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_work_table_top" type="fixed">
+    <origin xyz="0.18 0 0.48" rpy="0 0 0" />
+    <parent link="world" />
+    <child link="work_table_top" />
+  </joint>
+  <link name="work_table_leg_fl">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.08 0.08 0.46" />
+      </geometry>
+      <material name="work_table_leg_fl_mat">
+        <color rgba="0.35 0.35 0.38 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.08 0.08 0.46" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_work_table_leg_fl" type="fixed">
+    <origin xyz="-0.27 -0.35 0.23" rpy="0 0 0" />
+    <parent link="world" />
+    <child link="work_table_leg_fl" />
+  </joint>
+  <link name="work_table_leg_fr">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.08 0.08 0.46" />
+      </geometry>
+      <material name="work_table_leg_fr_mat">
+        <color rgba="0.35 0.35 0.38 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.08 0.08 0.46" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_work_table_leg_fr" type="fixed">
+    <origin xyz="0.63 -0.35 0.23" rpy="0 0 0" />
+    <parent link="world" />
+    <child link="work_table_leg_fr" />
+  </joint>
+  <link name="work_table_leg_bl">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.08 0.08 0.46" />
+      </geometry>
+      <material name="work_table_leg_bl_mat">
+        <color rgba="0.35 0.35 0.38 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.08 0.08 0.46" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_work_table_leg_bl" type="fixed">
+    <origin xyz="-0.27 0.35 0.23" rpy="0 0 0" />
+    <parent link="world" />
+    <child link="work_table_leg_bl" />
+  </joint>
+  <link name="work_table_leg_br">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.08 0.08 0.46" />
+      </geometry>
+      <material name="work_table_leg_br_mat">
+        <color rgba="0.35 0.35 0.38 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.08 0.08 0.46" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_work_table_leg_br" type="fixed">
+    <origin xyz="0.63 0.35 0.23" rpy="0 0 0" />
+    <parent link="world" />
+    <child link="work_table_leg_br" />
+  </joint>
+  <link name="screwdriver_red_handle">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.018" length="0.18" />
+      </geometry>
+      <material name="screwdriver_red_handle_mat">
+        <color rgba="0.85 0.15 0.15 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.018" length="0.18" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_screwdriver_red_handle" type="fixed">
+    <origin xyz="-0.02 0.12 0.525" rpy="0 1.5708 0" />
+    <parent link="world" />
+    <child link="screwdriver_red_handle" />
+  </joint>
+  <link name="screwdriver_red_shaft">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.006" length="0.16" />
+      </geometry>
+      <material name="screwdriver_red_shaft_mat">
+        <color rgba="0.65 0.65 0.70 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.006" length="0.16" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_screwdriver_red_shaft" type="fixed">
+    <origin xyz="0.16 0.12 0.525" rpy="0 1.5708 0" />
+    <parent link="world" />
+    <child link="screwdriver_red_shaft" />
+  </joint>
+  <link name="screwdriver_blue_handle">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.018" length="0.18" />
+      </geometry>
+      <material name="screwdriver_blue_handle_mat">
+        <color rgba="0.15 0.35 0.85 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.018" length="0.18" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_screwdriver_blue_handle" type="fixed">
+    <origin xyz="0.35 -0.16 0.525" rpy="0 1.5708 0.8" />
+    <parent link="world" />
+    <child link="screwdriver_blue_handle" />
+  </joint>
+  <link name="screwdriver_blue_shaft">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.006" length="0.16" />
+      </geometry>
+      <material name="screwdriver_blue_shaft_mat">
+        <color rgba="0.65 0.65 0.70 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.006" length="0.16" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_screwdriver_blue_shaft" type="fixed">
+    <origin xyz="0.49 -0.04 0.525" rpy="0 1.5708 0.8" />
+    <parent link="world" />
+    <child link="screwdriver_blue_shaft" />
+  </joint>
   <link name="right_hand_base">
     <inertial>
       <origin xyz="-0.0015600278745012287 0.0009625090756784007 0.09398454850555357" rpy="0 0 0" />
@@ -1107,17 +1416,25 @@
     <parent link="right_hand_base" />
     <child link="ee_site_link" />
   </joint>
-  <link name="world" />
   <link name="floor_link">
     <visual>
-      <origin xyz="0.5 0 0" rpy="0 0 0" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="2.0 2.0 0.02" />
+        <box size="12 12 0.02" />
       </geometry>
+      <material name="floor_link_mat">
+        <color rgba="0.22 0.22 0.24 1" />
+      </material>
     </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="12 12 0.02" />
+      </geometry>
+    </collision>
   </link>
-  <joint name="world_to_floor" type="fixed">
-    <origin xyz="0 0 -0.02" rpy="0 0 0" />
+  <joint name="world_to_floor_link" type="fixed">
+    <origin xyz="0 0 -0.01" rpy="0 0 0" />
     <parent link="world" />
     <child link="floor_link" />
   </joint>
@@ -1129,19 +1446,19 @@
   </joint>
   <link name="camera_front_link" />
   <joint name="world_to_camera_front" type="fixed">
-    <origin xyz="1.0 0 0.8" rpy="0 1.0472 1.5708" />
+    <origin xyz="2.4 -2.2 1.2" rpy="0 1.0472 0.7854" />
     <parent link="world" />
     <child link="camera_front_link" />
   </joint>
   <link name="camera_side_link" />
   <joint name="world_to_camera_side" type="fixed">
-    <origin xyz="0 1.0 0.8" rpy="1.0472 0 3.1416" />
+    <origin xyz="0 3.0 1.4" rpy="1.0472 0 3.1416" />
     <parent link="world" />
     <child link="camera_side_link" />
   </joint>
   <link name="camera_top_link" />
   <joint name="world_to_camera_top" type="fixed">
-    <origin xyz="0.4 0 1.5" rpy="0 0 0" />
+    <origin xyz="0.3 0 3.0" rpy="0 0 0" />
     <parent link="world" />
     <child link="camera_top_link" />
   </joint>
@@ -1406,8 +1723,8 @@
     </actuator>
   </transmission>
   <joint name="world_to_base" type="fixed">
-    <origin xyz="0 0 0" rpy="0 0 0" />
-    <parent link="world" />
+    <origin xyz="0 0 0.02" rpy="0 0 0" />
+    <parent link="robot_stand_top" />
     <child link="base_link" />
   </joint>
 </robot>
