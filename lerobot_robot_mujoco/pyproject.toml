@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.entry-points."lerobot.robots"]
-mujoco = "lerobot_robot_mujoco.mujoco:MuJoCoRobot"
+mujoco = "lerobot_robot_mujoco:MuJoCoRobot"
 
 [tool.setuptools.packages.find]
 include = ["lerobot_robot_mujoco*"]

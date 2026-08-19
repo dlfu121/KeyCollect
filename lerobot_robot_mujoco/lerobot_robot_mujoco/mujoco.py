@@ -9,6 +9,7 @@ import logging
 import time
 from typing import Any
 
+import mujoco
 import numpy as np
 
 from lerobot.robots.robot import Robot
@@ -19,6 +20,24 @@ from .simulation import MuJoCoSimulation
 from .safety import clip_joint_step, check_nan_inf
 
 logger = logging.getLogger(__name__)
+
+FINGER_GROUPS = {
+    "thumb": ("r_f_joint1_1", "r_f_joint1_2"),
+    "index": ("r_f_joint2_1", "r_f_joint2_2"),
+    "middle": ("r_f_joint3_1", "r_f_joint3_2"),
+    "ring": ("r_f_joint4_1", "r_f_joint4_2"),
+    "pinky": ("r_f_joint5_1", "r_f_joint5_2"),
+    "ring_pinky": ("r_f_joint4_1", "r_f_joint4_2", "r_f_joint5_1", "r_f_joint5_2"),
+}
+
+HAND_PRESETS = {
+    "open": {"thumb": (0.0, 0.0), "index": (0.0, 0.0), "middle": (0.0, 0.0), "ring": (0.0, 0.0), "pinky": (0.0, 0.0)},
+    "pinch": {"thumb": (1.45, 0.65), "index": (0.05, 0.9), "middle": (0.0, 0.05), "ring": (0.0, 0.0), "pinky": (0.0, 0.0)},
+    "tripod": {"thumb": (1.45, 0.7), "index": (0.05, 0.85), "middle": (0.0, 0.85), "ring": (0.0, 0.1), "pinky": (0.0, 0.05)},
+    "power": {"thumb": (1.25, 0.9), "index": (0.2, 1.05), "middle": (0.0, 1.1), "ring": (0.2, 1.05), "pinky": (0.3, 1.0)},
+    "sphere": {"thumb": (1.2, 0.65), "index": (0.25, 0.75), "middle": (0.0, 0.8), "ring": (0.25, 0.75), "pinky": (0.35, 0.7)},
+    "key": {"thumb": (1.35, 0.45), "index": (0.25, 0.15), "middle": (0.0, 0.45), "ring": (0.15, 0.5), "pinky": (0.2, 0.5)},
+}
 
 
 class MuJoCoRobot(Robot):
@@ -44,6 +63,7 @@ class MuJoCoRobot(Robot):
             physics_dt=config.physics_dt,
         )
         self._connected = False
+        self.cameras = config.cameras
         self._camera_configs: dict[str, tuple[int, int]] = {}
 
         # Build joint name lists
@@ -51,6 +71,7 @@ class MuJoCoRobot(Robot):
         self._gripper_joints = list(config.gripper_joint_names)
         self._all_joints = self._arm_joints + self._gripper_joints
         self._ee_site = config.ee_site_name
+        self._ee_frame_type = "site"
 
     @property
     def observation_features(self) -> dict:
@@ -65,23 +86,30 @@ class MuJoCoRobot(Robot):
         # Gripper
         for name in self._gripper_joints:
             features[f"{name}.pos"] = float
-        # EE pose: [x, y, z, qx, qy, qz, qw]
-        features["ee_pose"] = (7,)
+        # EE pose as scalar state features. In LeRobot 0.6.1 tuple-shaped
+        # hardware features are interpreted as cameras.
+        for pose_name in ("x", "y", "z", "qx", "qy", "qz", "qw"):
+            features[f"ee_pose.{pose_name}"] = float
 
-        # Camera images
-        for cam_name, (w, h) in self._camera_configs.items():
-            features[f"images.{cam_name}"] = (h, w, 3)
+        # Camera images. Use config directly because LeRobot queries features
+        # before connect() has populated _camera_configs.
+        for cam_name, cam_config in self.config.cameras.items():
+            features[cam_name] = (cam_config.height, cam_config.width, 3)
 
         return features
 
     @property
     def action_features(self) -> dict:
-        features = {}
-        for name in self._arm_joints:
-            features[f"{name}.pos"] = float
-        for name in self._gripper_joints:
-            features[f"{name}.pos"] = float
-        return features
+        return {
+            "delta_x": float,
+            "delta_y": float,
+            "delta_z": float,
+            "delta_roll": float,
+            "delta_pitch": float,
+            "delta_yaw": float,
+            "gripper_delta": float,
+            "hand_delta": float,
+        }
 
     @property
     def is_connected(self) -> bool:
@@ -103,11 +131,18 @@ class MuJoCoRobot(Robot):
             except ValueError as e:
                 raise RuntimeError(f"Joint validation failed: {e}") from e
 
-        # Validate EE site
+        # Validate EE frame. Prefer a MuJoCo site, but allow using a body name
+        # for scenes converted from URDF that do not define sites.
         try:
             self._sim.get_site_id(self._ee_site)
         except ValueError as e:
-            raise RuntimeError(f"EE site validation failed: {e}") from e
+            try:
+                self._sim.get_body_id(self._ee_site)
+            except ValueError as body_error:
+                raise RuntimeError(
+                    f"End-effector frame '{self._ee_site}' was not found as a site or body."
+                ) from body_error
+            self._ee_frame_type = "body"
 
         # Build camera configs from LeRobot CameraConfig
         for cam_name, cam_config in self.config.cameras.items():
@@ -116,6 +151,10 @@ class MuJoCoRobot(Robot):
             self._camera_configs[cam_name] = (cam_config.width, cam_config.height)
 
         self._sim.reset()
+        if self._all_joints:
+            current_positions = self._sim.get_joint_positions(self._all_joints)
+            self._sim.set_joint_positions(self._all_joints, current_positions)
+            self._sim.forward()
         self._connected = True
         logger.info("MuJoCo robot connected. Joints: %s, Cameras: %s",
                      self._all_joints, list(self._camera_configs.keys()))
@@ -146,13 +185,17 @@ class MuJoCoRobot(Robot):
             obs[f"{name}.pos"] = self._sim.get_joint_position(name)
 
         # EE pose
-        ee_pose = self._sim.get_ee_pose(self._ee_site)
-        obs["ee_pose"] = ee_pose
+        if self._ee_frame_type == "body":
+            ee_pose = self._sim.get_body_pose(self._ee_site)
+        else:
+            ee_pose = self._sim.get_ee_pose(self._ee_site)
+        for pose_name, value in zip(("x", "y", "z", "qx", "qy", "qz", "qw"), ee_pose):
+            obs[f"ee_pose.{pose_name}"] = float(value)
 
         # Camera images
         for cam_name, (w, h) in self._camera_configs.items():
             img = self._sim.render_camera(cam_name, width=w, height=h)
-            obs[f"images.{cam_name}"] = img
+            obs[cam_name] = img
 
         return obs
 
@@ -167,6 +210,9 @@ class MuJoCoRobot(Robot):
         """
         if not self._connected:
             raise RuntimeError("Robot not connected.")
+
+        if any(key.startswith("delta_") for key in action) or "hand_delta" in action or "hand_preset" in action:
+            action = self._delta_action_to_joint_action(action)
 
         # Extract targets
         targets = []
@@ -215,6 +261,86 @@ class MuJoCoRobot(Robot):
             executed[f"{name}.pos"] = float(target)
 
         return executed
+
+    def _delta_action_to_joint_action(self, action: dict[str, Any]) -> dict[str, float]:
+        delta = np.array(
+            [
+                action.get("delta_x", 0.0),
+                action.get("delta_y", 0.0),
+                action.get("delta_z", 0.0),
+                0.0,
+                action.get("delta_pitch", 0.0),
+                action.get("delta_yaw", 0.0),
+            ],
+            dtype=np.float64,
+        )
+        current_arm = self._sim.get_joint_positions(self._arm_joints)
+        if np.any(np.abs(delta) > 1e-12):
+            jacp = np.zeros((3, self._sim.model.nv))
+            jacr = np.zeros((3, self._sim.model.nv))
+            if self._ee_frame_type == "body":
+                frame_id = self._sim.get_body_id(self._ee_site)
+                mujoco.mj_jacBody(self._sim.model, self._sim.data, jacp, jacr, frame_id)
+            else:
+                frame_id = self._sim.get_site_id(self._ee_site)
+                mujoco.mj_jacSite(self._sim.model, self._sim.data, jacp, jacr, frame_id)
+            full_jac = np.vstack([jacp, jacr])
+            cols = [int(self._sim.model.jnt_dofadr[self._sim.get_joint_id(name)]) for name in self._arm_joints]
+            jac = full_jac[:, cols]
+            active = np.abs(delta) > 1e-12
+            lhs = jac[active].T @ jac[active] + (self.config.ik_damping**2) * np.eye(len(self._arm_joints))
+            dq = np.linalg.solve(lhs, jac[active].T @ delta[active])
+            current_arm = self._sim.clip_to_joint_limits(
+                self._arm_joints,
+                current_arm + np.clip(dq, -self.config.max_joint_step, self.config.max_joint_step),
+                self.config.joint_limit_margin,
+            )
+
+        wrist_roll = float(action.get("delta_roll", 0.0))
+        if abs(wrist_roll) > 1e-12 and self._arm_joints:
+            current_arm[-1] += wrist_roll
+            current_arm = self._sim.clip_to_joint_limits(self._arm_joints, current_arm, self.config.joint_limit_margin)
+
+        current_hand = self._sim.get_joint_positions(self._gripper_joints) if self._gripper_joints else np.array([])
+        current_hand = self._apply_hand_action(action, current_hand)
+
+        joint_action = {}
+        for name, value in zip(self._arm_joints, current_arm):
+            joint_action[f"{name}.pos"] = float(value)
+        for name, value in zip(self._gripper_joints, current_hand):
+            joint_action[f"{name}.pos"] = float(value)
+        return joint_action
+
+    def _apply_hand_action(self, action: dict[str, Any], current_hand: np.ndarray) -> np.ndarray:
+        if not self._gripper_joints:
+            return current_hand
+        desired = current_hand.copy()
+        preset_name = action.get("hand_preset")
+        if isinstance(preset_name, str) and preset_name in HAND_PRESETS:
+            values_by_joint = {}
+            for finger, values in HAND_PRESETS[preset_name].items():
+                for joint_name, value in zip(FINGER_GROUPS[finger], values):
+                    values_by_joint[joint_name] = value
+            desired = np.array([values_by_joint.get(joint, 0.0) for joint in self._gripper_joints], dtype=np.float64)
+
+        open_delta = float(action.get("hand_delta", action.get("gripper_delta", 0.0)))
+        if abs(open_delta) > 1e-12:
+            for i, joint in enumerate(self._gripper_joints):
+                if joint.endswith("_2"):
+                    desired[i] -= open_delta
+
+        finger_deltas = action.get("finger_deltas", {})
+        if isinstance(finger_deltas, dict):
+            joint_to_idx = {name: idx for idx, name in enumerate(self._gripper_joints)}
+            for finger, open_amount in finger_deltas.items():
+                for joint in FINGER_GROUPS.get(str(finger), ()):
+                    idx = joint_to_idx.get(joint)
+                    if idx is not None:
+                        desired[idx] -= float(open_amount)
+
+        desired = self._sim.clip_to_joint_limits(self._gripper_joints, desired, margin=0.0)
+        limited_step = np.clip(desired - current_hand, -0.12, 0.12)
+        return self._sim.clip_to_joint_limits(self._gripper_joints, current_hand + limited_step, margin=0.0)
 
     def disconnect(self) -> None:
         """Close simulation."""

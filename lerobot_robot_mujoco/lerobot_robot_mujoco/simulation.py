@@ -176,6 +176,15 @@ class MuJoCoSimulation:
             raise ValueError(f"Site '{name}' not found in model.")
         return sid
 
+    def get_body_id(self, name: str) -> int:
+        """Get body ID by name."""
+        if self._model is None:
+            raise RuntimeError("Simulation not loaded.")
+        bid = mujoco.mj_name2id(self._model, mujoco.mjtObj.mjOBJ_BODY, name)
+        if bid < 0:
+            raise ValueError(f"Body '{name}' not found in model.")
+        return bid
+
     def get_ee_pose(self, site_name: str = "ee_site") -> np.ndarray:
         """Get end-effector pose as [x, y, z, qx, qy, qz, qw]."""
         if self._data is None:
@@ -184,6 +193,18 @@ class MuJoCoSimulation:
         pos = self._data.site_xpos[sid].copy()
         rot_mat = self._data.site_xmat[sid].reshape(3, 3).copy()
         # Convert rotation matrix to quaternion
+        quat = np.zeros(4, dtype=np.float64)
+        mat_flat = rot_mat.flatten().astype(np.float64)
+        mujoco.mju_mat2Quat(quat, mat_flat)
+        return np.concatenate([pos, quat])
+
+    def get_body_pose(self, body_name: str) -> np.ndarray:
+        """Get body pose as [x, y, z, qx, qy, qz, qw]."""
+        if self._data is None:
+            raise RuntimeError("Simulation not loaded.")
+        bid = self.get_body_id(body_name)
+        pos = self._data.xpos[bid].copy()
+        rot_mat = self._data.xmat[bid].reshape(3, 3).copy()
         quat = np.zeros(4, dtype=np.float64)
         mat_flat = rot_mat.flatten().astype(np.float64)
         mujoco.mju_mat2Quat(quat, mat_flat)

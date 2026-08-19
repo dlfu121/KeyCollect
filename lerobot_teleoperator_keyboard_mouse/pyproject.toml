@@ -15,7 +15,7 @@ dependencies = [
 pynput-dep = ["pynput>=1.7"]
 
 [project.entry-points."lerobot.teleoperators"]
-keyboard_mouse = "lerobot_teleoperator_keyboard_mouse.keyboard_mouse:KeyboardMouseTeleop"
+keyboard_mouse = "lerobot_teleoperator_keyboard_mouse:KeyboardMouseTeleop"
 
 [tool.setuptools.packages.find]
 include = ["lerobot_teleoperator_keyboard_mouse*"]
