@@ -95,6 +95,8 @@ class MuJoCoRobot(Robot):
         self._all_joints = self._arm_joints + self._gripper_joints
         self._ee_site = config.ee_site_name
         self._ee_frame_type = "site"
+        self._rng = np.random.default_rng()
+        self._screwdriver_bodies = ("screwdriver_red", "screwdriver_blue")
 
     @property
     def observation_features(self) -> dict:
@@ -174,6 +176,7 @@ class MuJoCoRobot(Robot):
             self._camera_configs[cam_name] = (cam_config.width, cam_config.height)
 
         self._sim.reset()
+        self._randomize_screwdrivers_if_enabled()
         if self._all_joints:
             current_positions = self._sim.get_joint_positions(self._all_joints)
             self._sim.set_joint_positions(self._all_joints, current_positions)
@@ -386,6 +389,38 @@ class MuJoCoRobot(Robot):
     def reset_simulation(self) -> None:
         """Reset simulation state (e.g., at episode boundary)."""
         self._sim.reset()
+        self._randomize_screwdrivers_if_enabled()
+
+    def _randomize_screwdrivers_if_enabled(self) -> None:
+        if not getattr(self.config, "randomize_screwdrivers", False):
+            return
+
+        jitter = float(getattr(self.config, "screwdriver_xy_jitter_m", 0.06))
+        min_sep = float(getattr(self.config, "screwdriver_min_separation_m", 0.12))
+
+        candidates: dict[str, np.ndarray] = {}
+        for body_name in self._screwdriver_bodies:
+            try:
+                base = self._sim.get_body_pose(body_name)[:3].copy()
+            except ValueError:
+                logger.warning("Could not find screwdriver body in scene: %s", body_name)
+                continue
+            for _ in range(32):
+                offset = self._rng.uniform(-jitter, jitter, size=2)
+                candidate = base.copy()
+                candidate[:2] += offset
+                if all(np.linalg.norm(candidate[:2] - prev[:2]) >= min_sep for prev in candidates.values()):
+                    candidates[body_name] = candidate
+                    break
+            else:
+                candidates[body_name] = base
+
+        for body_name, pos in candidates.items():
+            try:
+                self._sim.set_body_position(body_name, pos)
+            except ValueError:
+                logger.warning("Could not randomize screwdriver body: %s", body_name)
+        self._sim.forward()
 
     def get_simulation_time(self) -> float:
         """Get current MuJoCo simulation time."""

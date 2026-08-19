@@ -47,3 +47,8 @@ class MuJoCoRobotConfig(RobotConfig):
     ik_max_iterations: int = 50
     ik_pos_tol: float = 0.005
     ik_ori_tol: float = 0.05
+
+    # Object randomization
+    randomize_screwdrivers: bool = False
+    screwdriver_xy_jitter_m: float = 0.06
+    screwdriver_min_separation_m: float = 0.12

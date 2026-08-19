@@ -190,6 +190,23 @@ class MuJoCoSimulation:
             raise ValueError(f"Body '{name}' not found in model.")
         return bid
 
+    def get_body_qpos_addr(self, name: str) -> int:
+        """Get qpos address for a body with a free joint."""
+        if self._model is None:
+            raise RuntimeError("Simulation not loaded.")
+        body_id = self.get_body_id(name)
+        joint_id = int(self._model.body_jntadr[body_id])
+        if joint_id < 0:
+            raise ValueError(f"Body '{name}' has no joint.")
+        return int(self._model.jnt_qposadr[joint_id])
+
+    def set_body_position(self, name: str, position: np.ndarray | list[float]) -> None:
+        """Set the position of a body with a free joint."""
+        if self._model is None or self._data is None:
+            raise RuntimeError("Simulation not loaded.")
+        addr = self.get_body_qpos_addr(name)
+        self._data.qpos[addr : addr + 3] = np.asarray(position, dtype=np.float64)
+
     def get_ee_pose(self, site_name: str = "ee_site") -> np.ndarray:
         """Get end-effector pose as [x, y, z, qx, qy, qz, qw]."""
         if self._data is None:
