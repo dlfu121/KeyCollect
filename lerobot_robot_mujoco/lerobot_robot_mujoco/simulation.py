@@ -7,8 +7,13 @@ loading, stepping, state access, and camera rendering.
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 from typing import Any, Callable
+
+# LeRobot record imports this plugin before users usually get feedback from
+# MuJoCo. Default to EGL so offscreen cameras do not silently render black via X11.
+os.environ.setdefault("MUJOCO_GL", "egl")
 
 import mujoco
 import mujoco.viewer

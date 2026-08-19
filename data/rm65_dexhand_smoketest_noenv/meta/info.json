@@ -68,7 +68,20 @@
                 "channels"
             ],
             "info": {
-                "is_depth_map": false
+                "is_depth_map": false,
+                "video.height": 480,
+                "video.width": 640,
+                "video.codec": "av1",
+                "video.pix_fmt": "yuv420p",
+                "video.fps": 30,
+                "video.channels": 3,
+                "has_audio": false,
+                "video.g": 2,
+                "video.crf": 30,
+                "video.preset": 12,
+                "video.fast_decode": 0,
+                "video.video_backend": "pyav",
+                "video.extra_options": {}
             }
         },
         "observation.images.wrist_overhead_camera": {
@@ -84,7 +97,20 @@
                 "channels"
             ],
             "info": {
-                "is_depth_map": false
+                "is_depth_map": false,
+                "video.height": 480,
+                "video.width": 640,
+                "video.codec": "av1",
+                "video.pix_fmt": "yuv420p",
+                "video.fps": 30,
+                "video.channels": 3,
+                "has_audio": false,
+                "video.g": 2,
+                "video.crf": 30,
+                "video.preset": 12,
+                "video.fast_decode": 0,
+                "video.video_backend": "pyav",
+                "video.extra_options": {}
             }
         },
         "timestamp": {
@@ -123,14 +149,16 @@
             "names": null
         }
     },
-    "total_episodes": 0,
-    "total_frames": 0,
-    "total_tasks": 0,
+    "total_episodes": 1,
+    "total_frames": 1,
+    "total_tasks": 1,
     "chunks_size": 1000,
     "data_files_size_in_mb": 100,
     "video_files_size_in_mb": 200,
     "data_path": "data/chunk-{chunk_index:03d}/file-{file_index:03d}.parquet",
     "video_path": "videos/{video_key}/chunk-{chunk_index:03d}/file-{file_index:03d}.mp4",
     "robot_type": "mujoco",
-    "splits": {}
+    "splits": {
+        "train": "0:1"
+    }
 }

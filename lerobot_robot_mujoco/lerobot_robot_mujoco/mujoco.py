@@ -6,8 +6,12 @@ Implements the LeRobot Robot interface backed by MuJoCo simulation.
 from __future__ import annotations
 
 import logging
+import os
 import time
 from typing import Any
+
+# Must be set before importing mujoco; callers may still override it explicitly.
+os.environ.setdefault("MUJOCO_GL", "egl")
 
 import mujoco
 import numpy as np
@@ -38,6 +42,25 @@ HAND_PRESETS = {
     "sphere": {"thumb": (1.2, 0.65), "index": (0.25, 0.75), "middle": (0.0, 0.8), "ring": (0.25, 0.75), "pinky": (0.35, 0.7)},
     "key": {"thumb": (1.35, 0.45), "index": (0.25, 0.15), "middle": (0.0, 0.45), "ring": (0.15, 0.5), "pinky": (0.2, 0.5)},
 }
+
+
+def _has_delta_motion(action: dict[str, Any]) -> bool:
+    motion_keys = (
+        "delta_x",
+        "delta_y",
+        "delta_z",
+        "delta_roll",
+        "delta_pitch",
+        "delta_yaw",
+        "gripper_delta",
+        "hand_delta",
+    )
+    if any(abs(float(action.get(key, 0.0))) > 1e-12 for key in motion_keys):
+        return True
+    if action.get("hand_preset") is not None:
+        return True
+    finger_deltas = action.get("finger_deltas", {})
+    return isinstance(finger_deltas, dict) and any(abs(float(delta)) > 1e-12 for delta in finger_deltas.values())
 
 
 class MuJoCoRobot(Robot):
@@ -211,7 +234,17 @@ class MuJoCoRobot(Robot):
         if not self._connected:
             raise RuntimeError("Robot not connected.")
 
-        if any(key.startswith("delta_") for key in action) or "hand_delta" in action or "hand_preset" in action:
+        is_delta_action = (
+            any(key.startswith("delta_") for key in action)
+            or "hand_delta" in action
+            or "gripper_delta" in action
+            or "hand_preset" in action
+        )
+        if is_delta_action and not _has_delta_motion(action):
+            self._sim.forward()
+            return action
+
+        if is_delta_action:
             action = self._delta_action_to_joint_action(action)
 
         # Extract targets
