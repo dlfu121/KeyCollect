@@ -4,7 +4,7 @@
 type: mujoco
 id: rm65_dexhand
 
-scene_path: assets/scene/rm65_dexhand_scene.urdf
+scene_path: assets/scenes/rm65_dexhand_scene.xml
 
 arm_joint_names:
   - joint_1
@@ -17,16 +17,26 @@ arm_joint_names:
 gripper_joint_names:
   - r_f_joint1_1
   - r_f_joint1_2
+  - r_f_joint1_3
+  - r_f_joint1_4
   - r_f_joint2_1
   - r_f_joint2_2
+  - r_f_joint2_3
+  - r_f_joint2_4
   - r_f_joint3_1
   - r_f_joint3_2
+  - r_f_joint3_3
+  - r_f_joint3_4
   - r_f_joint4_1
   - r_f_joint4_2
+  - r_f_joint4_3
+  - r_f_joint4_4
   - r_f_joint5_1
   - r_f_joint5_2
+  - r_f_joint5_3
+  - r_f_joint5_4
 
-ee_site_name: link_6
+ee_site_name: ee_site
 
 cameras:
   camera_front:
@@ -40,8 +50,15 @@ cameras:
 physics_dt: 0.002
 control_fps: 30
 
+# Randomize each screwdriver on reset within the RM65's comfortable table reach.
+randomize_screwdrivers: true
+screwdriver_workspace_x: [-0.32, 0.20]
+screwdriver_workspace_y: [-0.28, 0.28]
+screwdriver_min_separation_m: 0.12
+
 # Safety
 max_joint_step: 0.1
+max_finger_step: 0.05
 joint_limit_margin: 0.01
 
 # IK

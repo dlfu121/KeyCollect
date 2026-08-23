@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lerobot_teleoperator_mocap_ros"
+version = "0.1.0"
+description = "ROS1 motion-capture glove teleoperator plugin for LeRobot 0.6.1"
+requires-python = ">=3.12"
+dependencies = [
+    "lerobot==0.6.1",
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+rosbridge = ["roslibpy>=1.8"]
+
+[project.entry-points."lerobot.teleoperators"]
+mocap_ros = "lerobot_teleoperator_mocap_ros:MocapRosTeleop"
+
+[tool.setuptools.packages.find]
+include = ["lerobot_teleoperator_mocap_ros*"]

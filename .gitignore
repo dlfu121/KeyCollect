@@ -26,6 +26,7 @@ __pycache__/
 *.py[cod]
 *.pyo
 .venv/
+.venv-*/
 venv/
 .matplotlib-cache/
 assets/scenes/current_state.npz

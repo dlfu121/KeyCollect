@@ -138,7 +138,7 @@ KeyCollect/
 │   └── scene/          # MuJoCo 场景 XML
 ├── config/             # YAML 配置文件
 ├── lerobot_robot_mujoco/    # MuJoCo Robot Plugin
-├── lerobot_teleoperator_keyboard_mouse/  # 键鼠 Teleop Plugin
+├── lerobot_teleoperator_mocap_ros/       # ROS1 动捕手套 Teleop Plugin
 ├── processors/         # IK、EE 控制、动作映射
 └── scripts/            # 诊断和屏幕渲染脚本
 ```

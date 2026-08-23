@@ -21,6 +21,7 @@ class MuJoCoRobotConfig(RobotConfig):
         physics_dt: Physics simulation timestep (seconds).
         control_fps: Control loop frequency (Hz).
         max_joint_step: Maximum joint position change per control step (radians).
+        max_finger_step: Maximum DexHand target change per control step (radians).
         joint_limit_margin: Safety margin from joint limits (radians).
         ik_damping: Damping factor for DLS inverse kinematics.
         ik_max_iterations: Maximum IK solver iterations.
@@ -37,9 +38,11 @@ class MuJoCoRobotConfig(RobotConfig):
     # Simulation
     physics_dt: float = 0.002
     control_fps: int = 30
+    show_viewer: bool = False
 
     # Safety
     max_joint_step: float = 0.1
+    max_finger_step: float = 0.05
     joint_limit_margin: float = 0.01
 
     # IK
@@ -49,6 +52,9 @@ class MuJoCoRobotConfig(RobotConfig):
     ik_ori_tol: float = 0.05
 
     # Object randomization
-    randomize_screwdrivers: bool = False
-    screwdriver_xy_jitter_m: float = 0.06
+    randomize_screwdrivers: bool = True
+    # Bounds are the central, front portion of the 1.0 x 0.8 m work table,
+    # inside the RM65's comfortable downward-grasp workspace.
+    screwdriver_workspace_x: tuple[float, float] = (-0.32, 0.20)
+    screwdriver_workspace_y: tuple[float, float] = (-0.28, 0.28)
     screwdriver_min_separation_m: float = 0.12

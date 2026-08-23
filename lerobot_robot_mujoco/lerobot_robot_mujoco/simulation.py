@@ -76,7 +76,22 @@ class MuJoCoSimulation:
             mujoco.mj_resetDataKeyframe(self._model, self._data, home_id)
         else:
             mujoco.mj_resetData(self._model, self._data)
+        self._hold_current_position_targets()
         mujoco.mj_forward(self._model, self._data)
+
+    def _hold_current_position_targets(self) -> None:
+        """Anchor every position servo at its reset joint position."""
+        if self._model is None or self._data is None:
+            raise RuntimeError("Simulation not loaded.")
+        for actuator_id in range(self._model.nu):
+            if not self._is_position_actuator(actuator_id):
+                continue
+            joint_id = int(self._model.actuator_trnid[actuator_id, 0])
+            qpos_addr = int(self._model.jnt_qposadr[joint_id])
+            target = self._data.qpos[qpos_addr]
+            if self._model.actuator_ctrllimited[actuator_id]:
+                target = np.clip(target, *self._model.actuator_ctrlrange[actuator_id])
+            self._data.ctrl[actuator_id] = target
 
     def step(self, n_sub_steps: int = 1) -> None:
         """Step physics n_sub_steps times."""
@@ -145,13 +160,33 @@ class MuJoCoSimulation:
         if self._model is None or self._data is None:
             raise RuntimeError("Simulation not loaded.")
         for name, target in zip(names, targets):
-            jid = self.get_joint_id(name)
-            # Find the actuator that controls this joint
-            for act_id in range(self._model.nu):
-                if self._model.actuator_trntype[act_id] == mujoco.mjtTrn.mjTRN_JOINT:
-                    if int(self._model.actuator_trnid[act_id, 0]) == jid:
-                        self._data.ctrl[act_id] = target
-                        break
+            actuator_id = self.get_joint_actuator_id(name)
+            if not self._is_position_actuator(actuator_id):
+                raise ValueError(
+                    f"Joint '{name}' must use a MuJoCo position actuator; torque/motor actuators are unsupported."
+                )
+            self._data.ctrl[actuator_id] = target
+
+    def get_joint_actuator_id(self, name: str) -> int:
+        """Return the joint-transmission actuator controlling a named joint."""
+        if self._model is None:
+            raise RuntimeError("Simulation not loaded.")
+        joint_id = self.get_joint_id(name)
+        for actuator_id in range(self._model.nu):
+            if (
+                self._model.actuator_trntype[actuator_id] == mujoco.mjtTrn.mjTRN_JOINT
+                and int(self._model.actuator_trnid[actuator_id, 0]) == joint_id
+            ):
+                return actuator_id
+        raise ValueError(f"Joint '{name}' has no MuJoCo joint actuator.")
+
+    def _is_position_actuator(self, actuator_id: int) -> bool:
+        """Identify MuJoCo's affine position-servo actuator definition."""
+        if self._model is None:
+            raise RuntimeError("Simulation not loaded.")
+        kp = self._model.actuator_gainprm[actuator_id, 0]
+        bias = self._model.actuator_biasprm[actuator_id]
+        return kp > 0 and np.isclose(bias[1], -kp) and bias[2] <= 0
 
     def set_joint_qpos(self, names: list[str], targets: np.ndarray) -> None:
         """Directly set joint positions in qpos (for IK solving)."""
@@ -215,10 +250,10 @@ class MuJoCoSimulation:
         pos = self._data.site_xpos[sid].copy()
         rot_mat = self._data.site_xmat[sid].reshape(3, 3).copy()
         # Convert rotation matrix to quaternion
-        quat = np.zeros(4, dtype=np.float64)
+        quat_wxyz = np.zeros(4, dtype=np.float64)
         mat_flat = rot_mat.flatten().astype(np.float64)
-        mujoco.mju_mat2Quat(quat, mat_flat)
-        return np.concatenate([pos, quat])
+        mujoco.mju_mat2Quat(quat_wxyz, mat_flat)
+        return np.concatenate([pos, quat_wxyz[[1, 2, 3, 0]]])
 
     def get_body_pose(self, body_name: str) -> np.ndarray:
         """Get body pose as [x, y, z, qx, qy, qz, qw]."""
@@ -227,10 +262,10 @@ class MuJoCoSimulation:
         bid = self.get_body_id(body_name)
         pos = self._data.xpos[bid].copy()
         rot_mat = self._data.xmat[bid].reshape(3, 3).copy()
-        quat = np.zeros(4, dtype=np.float64)
+        quat_wxyz = np.zeros(4, dtype=np.float64)
         mat_flat = rot_mat.flatten().astype(np.float64)
-        mujoco.mju_mat2Quat(quat, mat_flat)
-        return np.concatenate([pos, quat])
+        mujoco.mju_mat2Quat(quat_wxyz, mat_flat)
+        return np.concatenate([pos, quat_wxyz[[1, 2, 3, 0]]])
 
     def get_site_jacobian(self, site_name: str = "ee_site", joint_names: list[str] | None = None) -> np.ndarray:
         """Compute 6×N Jacobian for the given site w.r.t. specified joints.

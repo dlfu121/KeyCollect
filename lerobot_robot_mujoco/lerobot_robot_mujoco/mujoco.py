@@ -20,29 +20,11 @@ from lerobot.robots.robot import Robot
 from lerobot.robots.config import RobotConfig
 
 from .config_mujoco import MuJoCoRobotConfig
+from .rm65_kinematics import CartesianPoseTarget, damped_least_squares
 from .simulation import MuJoCoSimulation
-from .safety import clip_joint_step, check_nan_inf
+from .safety import clip_joint_step, check_nan_inf, unwrap_revolute_targets
 
 logger = logging.getLogger(__name__)
-
-FINGER_GROUPS = {
-    "thumb": ("r_f_joint1_1", "r_f_joint1_2"),
-    "index": ("r_f_joint2_1", "r_f_joint2_2"),
-    "middle": ("r_f_joint3_1", "r_f_joint3_2"),
-    "ring": ("r_f_joint4_1", "r_f_joint4_2"),
-    "pinky": ("r_f_joint5_1", "r_f_joint5_2"),
-    "ring_pinky": ("r_f_joint4_1", "r_f_joint4_2", "r_f_joint5_1", "r_f_joint5_2"),
-}
-
-HAND_PRESETS = {
-    "open": {"thumb": (0.0, 0.0), "index": (0.0, 0.0), "middle": (0.0, 0.0), "ring": (0.0, 0.0), "pinky": (0.0, 0.0)},
-    "pinch": {"thumb": (1.45, 0.65), "index": (0.05, 0.9), "middle": (0.0, 0.05), "ring": (0.0, 0.0), "pinky": (0.0, 0.0)},
-    "tripod": {"thumb": (1.45, 0.7), "index": (0.05, 0.85), "middle": (0.0, 0.85), "ring": (0.0, 0.1), "pinky": (0.0, 0.05)},
-    "power": {"thumb": (1.25, 0.9), "index": (0.2, 1.05), "middle": (0.0, 1.1), "ring": (0.2, 1.05), "pinky": (0.3, 1.0)},
-    "sphere": {"thumb": (1.2, 0.65), "index": (0.25, 0.75), "middle": (0.0, 0.8), "ring": (0.25, 0.75), "pinky": (0.35, 0.7)},
-    "key": {"thumb": (1.35, 0.45), "index": (0.25, 0.15), "middle": (0.0, 0.45), "ring": (0.15, 0.5), "pinky": (0.2, 0.5)},
-}
-
 
 def _has_delta_motion(action: dict[str, Any]) -> bool:
     motion_keys = (
@@ -52,15 +34,15 @@ def _has_delta_motion(action: dict[str, Any]) -> bool:
         "delta_roll",
         "delta_pitch",
         "delta_yaw",
-        "gripper_delta",
-        "hand_delta",
     )
     if any(abs(float(action.get(key, 0.0))) > 1e-12 for key in motion_keys):
         return True
-    if action.get("hand_preset") is not None:
+    if any(
+        key.endswith(".delta") and abs(float(value)) > 1e-12
+        for key, value in action.items()
+    ):
         return True
-    finger_deltas = action.get("finger_deltas", {})
-    return isinstance(finger_deltas, dict) and any(abs(float(delta)) > 1e-12 for delta in finger_deltas.values())
+    return False
 
 
 class MuJoCoRobot(Robot):
@@ -97,6 +79,7 @@ class MuJoCoRobot(Robot):
         self._ee_frame_type = "site"
         self._rng = np.random.default_rng()
         self._screwdriver_bodies = ("screwdriver_red", "screwdriver_blue")
+        self._cartesian_target: CartesianPoseTarget | None = None
 
     @property
     def observation_features(self) -> dict:
@@ -125,16 +108,18 @@ class MuJoCoRobot(Robot):
 
     @property
     def action_features(self) -> dict:
-        return {
+        features = {
             "delta_x": float,
             "delta_y": float,
             "delta_z": float,
             "delta_roll": float,
             "delta_pitch": float,
             "delta_yaw": float,
-            "gripper_delta": float,
-            "hand_delta": float,
         }
+        # Per-joint hand deltas make continuous glove motion explicit in the
+        # LeRobot dataset instead of hiding it in a non-serializable dict.
+        features.update({f"{name}.delta": float for name in self._gripper_joints})
+        return features
 
     @property
     def is_connected(self) -> bool:
@@ -181,6 +166,8 @@ class MuJoCoRobot(Robot):
             current_positions = self._sim.get_joint_positions(self._all_joints)
             self._sim.set_joint_positions(self._all_joints, current_positions)
             self._sim.forward()
+        if self.config.show_viewer:
+            self._sim.launch_viewer()
         self._connected = True
         logger.info("MuJoCo robot connected. Joints: %s, Cameras: %s",
                      self._all_joints, list(self._camera_configs.keys()))
@@ -239,16 +226,14 @@ class MuJoCoRobot(Robot):
 
         is_delta_action = (
             any(key.startswith("delta_") for key in action)
-            or "hand_delta" in action
-            or "gripper_delta" in action
-            or "hand_preset" in action
+            or any(key.endswith(".delta") for key in action)
         )
-        if is_delta_action and not _has_delta_motion(action):
-            self._sim.forward()
-            return action
-
         if is_delta_action:
             action = self._delta_action_to_joint_action(action)
+        else:
+            # A direct joint command invalidates the previously integrated
+            # Cartesian target; initialize it again on the next delta command.
+            self._cartesian_target = None
 
         # Extract targets
         targets = []
@@ -299,43 +284,51 @@ class MuJoCoRobot(Robot):
         return executed
 
     def _delta_action_to_joint_action(self, action: dict[str, Any]) -> dict[str, float]:
-        delta = np.array(
-            [
-                action.get("delta_x", 0.0),
-                action.get("delta_y", 0.0),
-                action.get("delta_z", 0.0),
-                0.0,
-                action.get("delta_pitch", 0.0),
-                action.get("delta_yaw", 0.0),
-            ],
+        current_arm = self._sim.get_joint_positions(self._arm_joints)
+        translation_world = np.asarray(
+            [action.get("delta_x", 0.0), action.get("delta_y", 0.0), action.get("delta_z", 0.0)],
             dtype=np.float64,
         )
-        current_arm = self._sim.get_joint_positions(self._arm_joints)
-        if np.any(np.abs(delta) > 1e-12):
-            jacp = np.zeros((3, self._sim.model.nv))
-            jacr = np.zeros((3, self._sim.model.nv))
-            if self._ee_frame_type == "body":
-                frame_id = self._sim.get_body_id(self._ee_site)
-                mujoco.mj_jacBody(self._sim.model, self._sim.data, jacp, jacr, frame_id)
-            else:
-                frame_id = self._sim.get_site_id(self._ee_site)
-                mujoco.mj_jacSite(self._sim.model, self._sim.data, jacp, jacr, frame_id)
+        rotation_local = np.asarray(
+            [action.get("delta_roll", 0.0), action.get("delta_pitch", 0.0), action.get("delta_yaw", 0.0)],
+            dtype=np.float64,
+        )
+        jacp = np.zeros((3, self._sim.model.nv))
+        jacr = np.zeros((3, self._sim.model.nv))
+        if self._ee_frame_type == "body":
+            frame_id = self._sim.get_body_id(self._ee_site)
+            mujoco.mj_jacBody(self._sim.model, self._sim.data, jacp, jacr, frame_id)
+            ee_position_world = self._sim.data.xpos[frame_id].copy()
+            ee_rotation_world = self._sim.data.xmat[frame_id].reshape(3, 3).copy()
+        else:
+            frame_id = self._sim.get_site_id(self._ee_site)
+            mujoco.mj_jacSite(self._sim.model, self._sim.data, jacp, jacr, frame_id)
+            ee_position_world = self._sim.data.site_xpos[frame_id].copy()
+            ee_rotation_world = self._sim.data.site_xmat[frame_id].reshape(3, 3).copy()
+
+        if self._cartesian_target is None:
+            self._cartesian_target = CartesianPoseTarget.from_pose(ee_position_world, ee_rotation_world)
+        self._cartesian_target.integrate(translation_world, rotation_local)
+        pose_error = self._cartesian_target.error(ee_position_world, ee_rotation_world)
+        if np.linalg.norm(pose_error) > 1e-9:
             full_jac = np.vstack([jacp, jacr])
             cols = [int(self._sim.model.jnt_dofadr[self._sim.get_joint_id(name)]) for name in self._arm_joints]
             jac = full_jac[:, cols]
-            active = np.abs(delta) > 1e-12
-            lhs = jac[active].T @ jac[active] + (self.config.ik_damping**2) * np.eye(len(self._arm_joints))
-            dq = np.linalg.solve(lhs, jac[active].T @ delta[active])
+            # Keep correcting the absolute flange/TCP target on later frames.
+            # This prevents a damped or rate-limited step from losing residual
+            # wrist error, which is especially important near singularities.
+            dq = damped_least_squares(jac, pose_error, self.config.ik_damping)
+            candidate_arm = current_arm + np.clip(
+                dq, -self.config.max_joint_step, self.config.max_joint_step
+            )
+            # Select the 2*pi-equivalent wrist solution nearest the current
+            # state, avoiding a full J6 revolution at the angle branch cut.
+            candidate_arm = unwrap_revolute_targets(current_arm, candidate_arm)
             current_arm = self._sim.clip_to_joint_limits(
                 self._arm_joints,
-                current_arm + np.clip(dq, -self.config.max_joint_step, self.config.max_joint_step),
+                candidate_arm,
                 self.config.joint_limit_margin,
             )
-
-        wrist_roll = float(action.get("delta_roll", 0.0))
-        if abs(wrist_roll) > 1e-12 and self._arm_joints:
-            current_arm[-1] += wrist_roll
-            current_arm = self._sim.clip_to_joint_limits(self._arm_joints, current_arm, self.config.joint_limit_margin)
 
         current_hand = self._sim.get_joint_positions(self._gripper_joints) if self._gripper_joints else np.array([])
         current_hand = self._apply_hand_action(action, current_hand)
@@ -351,31 +344,17 @@ class MuJoCoRobot(Robot):
         if not self._gripper_joints:
             return current_hand
         desired = current_hand.copy()
-        preset_name = action.get("hand_preset")
-        if isinstance(preset_name, str) and preset_name in HAND_PRESETS:
-            values_by_joint = {}
-            for finger, values in HAND_PRESETS[preset_name].items():
-                for joint_name, value in zip(FINGER_GROUPS[finger], values):
-                    values_by_joint[joint_name] = value
-            desired = np.array([values_by_joint.get(joint, 0.0) for joint in self._gripper_joints], dtype=np.float64)
-
-        open_delta = float(action.get("hand_delta", action.get("gripper_delta", 0.0)))
-        if abs(open_delta) > 1e-12:
-            for i, joint in enumerate(self._gripper_joints):
-                if joint.endswith("_2"):
-                    desired[i] -= open_delta
-
-        finger_deltas = action.get("finger_deltas", {})
-        if isinstance(finger_deltas, dict):
-            joint_to_idx = {name: idx for idx, name in enumerate(self._gripper_joints)}
-            for finger, open_amount in finger_deltas.items():
-                for joint in FINGER_GROUPS.get(str(finger), ()):
-                    idx = joint_to_idx.get(joint)
-                    if idx is not None:
-                        desired[idx] -= float(open_amount)
+        for index, joint_name in enumerate(self._gripper_joints):
+            key = f"{joint_name}.delta"
+            if key in action:
+                desired[index] += float(action[key])
 
         desired = self._sim.clip_to_joint_limits(self._gripper_joints, desired, margin=0.0)
-        limited_step = np.clip(desired - current_hand, -0.12, 0.12)
+        limited_step = np.clip(
+            desired - current_hand,
+            -self.config.max_finger_step,
+            self.config.max_finger_step,
+        )
         return self._sim.clip_to_joint_limits(self._gripper_joints, current_hand + limited_step, margin=0.0)
 
     def disconnect(self) -> None:
@@ -389,13 +368,15 @@ class MuJoCoRobot(Robot):
     def reset_simulation(self) -> None:
         """Reset simulation state (e.g., at episode boundary)."""
         self._sim.reset()
+        self._cartesian_target = None
         self._randomize_screwdrivers_if_enabled()
 
     def _randomize_screwdrivers_if_enabled(self) -> None:
         if not getattr(self.config, "randomize_screwdrivers", False):
             return
 
-        jitter = float(getattr(self.config, "screwdriver_xy_jitter_m", 0.06))
+        x_bounds = tuple(getattr(self.config, "screwdriver_workspace_x", (-0.32, 0.20)))
+        y_bounds = tuple(getattr(self.config, "screwdriver_workspace_y", (-0.28, 0.28)))
         min_sep = float(getattr(self.config, "screwdriver_min_separation_m", 0.12))
 
         candidates: dict[str, np.ndarray] = {}
@@ -406,9 +387,9 @@ class MuJoCoRobot(Robot):
                 logger.warning("Could not find screwdriver body in scene: %s", body_name)
                 continue
             for _ in range(32):
-                offset = self._rng.uniform(-jitter, jitter, size=2)
                 candidate = base.copy()
-                candidate[:2] += offset
+                candidate[0] = self._rng.uniform(*x_bounds)
+                candidate[1] = self._rng.uniform(*y_bounds)
                 if all(np.linalg.norm(candidate[:2] - prev[:2]) >= min_sep for prev in candidates.values()):
                     candidates[body_name] = candidate
                     break

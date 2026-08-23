@@ -28,6 +28,12 @@ from .config_keyboard_mouse import KeyboardMouseTeleopConfig
 
 logger = logging.getLogger(__name__)
 
+DEXHAND_JOINTS = [
+    f"r_f_joint{finger}_{joint}"
+    for finger in range(1, 6)
+    for joint in range(1, 5)
+]
+
 # Try to import pynput for keyboard/mouse
 try:
     from pynput import keyboard, mouse
@@ -81,6 +87,7 @@ class KeyboardMouseTeleop(Teleoperator):
             features["hand_delta"] = float
             features["hand_preset"] = str
             features["finger_deltas"] = dict
+            features.update({f"{name}.delta": float for name in DEXHAND_JOINTS})
         return features
 
     @property
@@ -181,6 +188,7 @@ class KeyboardMouseTeleop(Teleoperator):
                 action["hand_delta"] = 0.0
                 action["hand_preset"] = None
                 action["finger_deltas"] = {}
+                action.update({f"{name}.delta": 0.0 for name in DEXHAND_JOINTS})
             return action
 
         step = self.config.translation_step_m
@@ -265,6 +273,10 @@ class KeyboardMouseTeleop(Teleoperator):
             action["hand_delta"] = hand_delta
             action["hand_preset"] = hand_preset
             action["finger_deltas"] = finger_deltas
+            # The keyboard path continues to use its coarse hand controls;
+            # zero-fill the serializable per-joint glove fields so recording
+            # remains compatible with the expanded robot action schema.
+            action.update({f"{name}.delta": 0.0 for name in DEXHAND_JOINTS})
 
         return action
 

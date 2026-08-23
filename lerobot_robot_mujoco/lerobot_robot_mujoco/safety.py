@@ -9,6 +9,19 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
+def unwrap_revolute_targets(
+    current: np.ndarray,
+    target: np.ndarray,
+    period: float = 2.0 * np.pi,
+) -> np.ndarray:
+    """Choose periodic revolute targets nearest to the current angles."""
+    current = np.asarray(current, dtype=np.float64)
+    target = np.asarray(target, dtype=np.float64)
+    if current.shape != target.shape:
+        raise ValueError("current and target must have the same shape")
+    return target + period * np.round((current - target) / period)
+
+
 def clip_joint_step(
     current: np.ndarray,
     target: np.ndarray,

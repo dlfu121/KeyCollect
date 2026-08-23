@@ -3,10 +3,10 @@ requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "lerobot-robot-mujoco"
+name = "lerobot_robot_mujoco"
 version = "0.1.0"
 description = "MuJoCo Robot Plugin for LeRobot 0.6.1"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "mujoco==3.11.0",
     "numpy>=2.0",

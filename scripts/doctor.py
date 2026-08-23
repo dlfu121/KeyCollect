@@ -30,8 +30,8 @@ def main():
     # Python
     print("\n--- Python ---")
     py_ver = platform.python_version()
-    py_ok = py_ver.startswith("3.12")
-    all_ok &= check("Python 3.12", py_ok, py_ver)
+    py_ok = sys.version_info >= (3, 12)
+    all_ok &= check("Python >= 3.12", py_ok, py_ver)
 
     # MuJoCo
     print("\n--- MuJoCo ---")
@@ -95,14 +95,14 @@ def main():
         all_ok &= check("MuJoCo Robot plugin", False, str(e))
 
     try:
-        from lerobot_teleoperator_keyboard_mouse import KeyboardMouseTeleop, KeyboardMouseTeleopConfig
-        all_ok &= check("Keyboard+Mouse Teleop plugin", True)
+        from lerobot_teleoperator_mocap_ros import MocapRosTeleop, MocapRosTeleopConfig
+        all_ok &= check("Mocap ROS Teleop plugin", True)
     except ImportError as e:
-        all_ok &= check("Keyboard+Mouse Teleop plugin", False, str(e))
+        all_ok &= check("Mocap ROS Teleop plugin", False, str(e))
 
     # Scene test (if scene file provided)
     print("\n--- Scene ---")
-    scene_path = sys.argv[1] if len(sys.argv) > 1 else "assets/scene/demo_scene.xml"
+    scene_path = sys.argv[1] if len(sys.argv) > 1 else "assets/scenes/rm65_dexhand_scene.xml"
     if mj_ok:
         try:
             from lerobot_robot_mujoco.simulation import MuJoCoSimulation
@@ -113,7 +113,7 @@ def main():
             all_ok &= check("Named cameras", len(cameras) > 0, str(cameras))
 
             # Test joint mapping
-            joints = ["joint1", "joint2", "joint3", "joint4", "joint5", "joint6"]
+            joints = ["joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"]
             for j in joints:
                 try:
                     sim.get_joint_id(j)
@@ -123,10 +123,10 @@ def main():
 
             # Test EE site
             try:
-                sim.get_site_id("ee_site")
-                all_ok &= check("EE site", True)
+                sim.get_body_id("link_6")
+                all_ok &= check("EE body 'link_6'", True)
             except ValueError:
-                all_ok &= check("EE site", False, "Not found")
+                all_ok &= check("EE body 'link_6'", False, "Not found")
 
             # Test camera rendering
             if cameras:

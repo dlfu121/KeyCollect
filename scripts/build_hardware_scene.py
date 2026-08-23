@@ -11,7 +11,48 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
-ARM_HOME_QPOS = np.array([0.0303, -1.5190, -0.0250, 0.0018, -1.4745, 0.0319], dtype=np.float64)
+# This wrist-roll reference keeps the DexHand palm facing downward at reset.
+# Runtime IK still unwraps equivalent J6 angles to avoid unnecessary turns.
+ARM_HOME_QPOS = np.deg2rad([0.0, -60.0, -45.0, 0.0, 10.0, 180.0])
+DEXHAND_HOME_QPOS = np.zeros(20, dtype=np.float64)
+ARM_POSITION_GAINS = (
+    (1200.0, 70.0),
+    (1200.0, 70.0),
+    (800.0, 55.0),
+    (500.0, 35.0),
+    (350.0, 30.0),
+    (250.0, 20.0),
+)
+DEXHAND_POSITION_GAIN = (100.0, 5.0)
+
+# Work surface layout (metres).  The robot stand top is at z=0.60 m;
+# keeping the work surface slightly above it makes the objects easy to reach.
+WORK_TABLE_CENTER_X = 0.0
+WORK_TABLE_HEIGHT = 0.65
+WORK_TABLE_THICKNESS = 0.04
+
+
+def indent_xml(tree: ET.ElementTree, space: str = "  ") -> None:
+    """Indent XML on Python 3.8 as well as newer interpreters."""
+    if hasattr(ET, "indent"):
+        ET.indent(tree, space=space)
+        return
+
+    def indent_element(element: ET.Element, level: int = 0) -> None:
+        whitespace = "\n" + level * space
+        child_whitespace = "\n" + (level + 1) * space
+        if len(element):
+            if not element.text or not element.text.strip():
+                element.text = child_whitespace
+            for child in element:
+                indent_element(child, level + 1)
+                if not child.tail or not child.tail.strip():
+                    child.tail = child_whitespace
+            element[-1].tail = whitespace
+        elif level and (not element.tail or not element.tail.strip()):
+            element.tail = whitespace
+
+    indent_element(tree.getroot())
 
 
 def add_box(
@@ -73,6 +114,32 @@ def add_cylinder(
     )
 
 
+def add_screwdriver(
+    robot: ET.Element,
+    name: str,
+    xyz: str,
+    handle_rgba: str,
+    yaw: float = 0.0,
+) -> None:
+    """Add a graspable screwdriver with a single floating root body.
+
+    The handle and shaft are fixed children of the root, so they move as one
+    rigid object when the free joint is grasped or randomized.
+    """
+    root = ET.SubElement(robot, "link", {"name": name})
+    root_joint = ET.SubElement(robot, "joint", {"name": f"world_to_{name}", "type": "floating"})
+    root_joint.extend(
+        [
+            ET.Element("origin", {"xyz": xyz, "rpy": f"0 0 {yaw:.6f}"}),
+            ET.Element("parent", {"link": "world"}),
+            ET.Element("child", {"link": name}),
+        ]
+    )
+    # The handle ends at x=0.04 and the shaft starts at the same point.
+    add_cylinder(robot, f"{name}_handle", name, "-0.040 0 0", 0.018, 0.160, handle_rgba, "0 1.5708 0")
+    add_cylinder(robot, f"{name}_shaft", name, "0.140 0 0", 0.006, 0.200, "0.65 0.65 0.70 1", "0 1.5708 0")
+
+
 def rewrite_mesh_paths(root: ET.Element, asset_dir: str, scale: str | None = None) -> None:
     for mesh in root.findall(".//mesh"):
         filename = mesh.get("filename")
@@ -96,6 +163,7 @@ def add_mujoco_defaults(robot: ET.Element) -> None:
             "angle": "radian",
             "balanceinertia": "true",
             "discardvisual": "false",
+            "strippath": "false",
         },
     )
 
@@ -148,55 +216,28 @@ def append_robot_stand_table(robot: ET.Element) -> None:
 
 
 def append_work_table_scene(robot: ET.Element) -> None:
-    add_box(robot, "work_table_top", "world", "0.18 0 0.48", "1.0 0.8 0.04", "0.50 0.45 0.40 1")
+    top_center_z = WORK_TABLE_HEIGHT - WORK_TABLE_THICKNESS / 2
+    leg_height = WORK_TABLE_HEIGHT - WORK_TABLE_THICKNESS
+    leg_center_z = leg_height / 2
+    add_box(
+        robot,
+        "work_table_top",
+        "world",
+        f"{WORK_TABLE_CENTER_X} 0 {top_center_z:.3f}",
+        "1.0 0.8 0.04",
+        "0.50 0.45 0.40 1",
+    )
     for name, x, y in (
-        ("work_table_leg_fl", "-0.27", "-0.35"),
-        ("work_table_leg_fr", "0.63", "-0.35"),
-        ("work_table_leg_bl", "-0.27", "0.35"),
-        ("work_table_leg_br", "0.63", "0.35"),
+        ("work_table_leg_fl", f"{WORK_TABLE_CENTER_X - 0.45:.3f}", "-0.35"),
+        ("work_table_leg_fr", f"{WORK_TABLE_CENTER_X + 0.45:.3f}", "-0.35"),
+        ("work_table_leg_bl", f"{WORK_TABLE_CENTER_X - 0.45:.3f}", "0.35"),
+        ("work_table_leg_br", f"{WORK_TABLE_CENTER_X + 0.45:.3f}", "0.35"),
     ):
-        add_box(robot, name, "world", f"{x} {y} 0.23", "0.08 0.08 0.46", "0.35 0.35 0.38 1")
+        add_box(robot, name, "world", f"{x} {y} {leg_center_z:.3f}", f"0.08 0.08 {leg_height:.3f}", "0.35 0.35 0.38 1")
 
-    add_cylinder(
-        robot,
-        "screwdriver_red_handle",
-        "world",
-        "-0.02 0.12 0.525",
-        0.018,
-        0.18,
-        "0.85 0.15 0.15 1",
-        "0 1.5708 0",
-    )
-    add_cylinder(
-        robot,
-        "screwdriver_red_shaft",
-        "world",
-        "0.16 0.12 0.525",
-        0.006,
-        0.16,
-        "0.65 0.65 0.70 1",
-        "0 1.5708 0",
-    )
-    add_cylinder(
-        robot,
-        "screwdriver_blue_handle",
-        "world",
-        "0.35 -0.16 0.525",
-        0.018,
-        0.18,
-        "0.15 0.35 0.85 1",
-        "0 1.5708 0.8",
-    )
-    add_cylinder(
-        robot,
-        "screwdriver_blue_shaft",
-        "world",
-        "0.49 -0.04 0.525",
-        0.006,
-        0.16,
-        "0.65 0.65 0.70 1",
-        "0 1.5708 0.8",
-    )
+    object_z = WORK_TABLE_HEIGHT + 0.025
+    add_screwdriver(robot, "screwdriver_red", f"-0.18 0.12 {object_z:.3f}", "0.85 0.15 0.15 1", 0.35)
+    add_screwdriver(robot, "screwdriver_blue", f"0.12 -0.16 {object_z:.3f}", "0.15 0.35 0.85 1", -0.8)
 
 
 def append_actuators(robot: ET.Element) -> None:
@@ -292,11 +333,59 @@ def export_mjcf(urdf_path: Path, mjcf_path: Path) -> None:
     tree = ET.parse(mjcf_path)
     root = tree.getroot()
 
+    # Position servos otherwise need a persistent pose error to generate the
+    # torque that holds the arm and hand against gravity. Scope compensation to
+    # the robot subtree so free task objects still obey world gravity.
+    robot_root = root.find(".//body[@name='link_1']")
+    if robot_root is None:
+        raise ValueError("Exported MJCF does not contain the RM65 root body 'link_1'.")
+    for body in robot_root.iter("body"):
+        body.set("gravcomp", "1")
+
     ET.SubElement(root, "option", {"timestep": "0.002", "integrator": "implicitfast"})
     ET.SubElement(root, "statistic", {"center": "0 0 0.7", "extent": "3.2"})
     visual = ET.SubElement(root, "visual")
     ET.SubElement(visual, "headlight", {"ambient": "0.35 0.35 0.35", "diffuse": "0.65 0.65 0.65", "specular": "0.2 0.2 0.2"})
     ET.SubElement(visual, "global", {"azimuth": "135", "elevation": "-25"})
+
+    actuator = root.find("actuator")
+    if actuator is not None:
+        root.remove(actuator)
+    actuator = ET.SubElement(root, "actuator")
+    actuator.append(ET.Comment("Position servos; ctrl is a joint-angle target, never a torque command."))
+    for joint_id in range(model.njnt):
+        joint_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, joint_id)
+        if joint_name is None:
+            continue
+        if joint_name.startswith("joint_"):
+            arm_index = int(joint_name[len("joint_") :]) - 1
+            if not 0 <= arm_index < len(ARM_POSITION_GAINS):
+                continue
+            kp, kv = ARM_POSITION_GAINS[arm_index]
+            actuator_name = joint_name
+        elif joint_name.startswith("r_f_joint"):
+            kp, kv = DEXHAND_POSITION_GAIN
+            actuator_name = f"act_{joint_name}"
+        else:
+            continue
+
+        lower, upper = model.jnt_range[joint_id]
+        force_lower, force_upper = model.jnt_actfrcrange[joint_id]
+        if force_lower >= force_upper:
+            force_lower, force_upper = -10.0, 10.0
+        ET.SubElement(
+            actuator,
+            "position",
+            {
+                "name": actuator_name,
+                "joint": joint_name,
+                "kp": f"{kp:g}",
+                "kv": f"{kv:g}",
+                "ctrlrange": f"{lower:g} {upper:g}",
+                "forcerange": f"{force_lower:g} {force_upper:g}",
+                "forcelimited": "true",
+            },
+        )
 
     def look_at_xyaxes(pos: tuple[float, float, float], target: tuple[float, float, float]) -> str:
         forward = np.array(target, dtype=np.float64) - np.array(pos, dtype=np.float64)
@@ -332,8 +421,11 @@ def export_mjcf(urdf_path: Path, mjcf_path: Path) -> None:
                 "camera",
                 {
                     "name": "table_camera",
-                    "pos": "-0.36 0.00 0.66",
-                    "xyaxes": look_at_xyaxes((-0.36, 0.0, 0.66), (0.18, 0.0, 0.52)),
+                    "pos": f"{WORK_TABLE_CENTER_X - 0.18:.3f} 0.00 {WORK_TABLE_HEIGHT + 0.16:.3f}",
+                    "xyaxes": look_at_xyaxes(
+                        (WORK_TABLE_CENTER_X - 0.18, 0.0, WORK_TABLE_HEIGHT + 0.16),
+                        (WORK_TABLE_CENTER_X, 0.0, WORK_TABLE_HEIGHT + 0.02),
+                    ),
                     "fovy": "65",
                 },
             ),
@@ -359,18 +451,24 @@ def export_mjcf(urdf_path: Path, mjcf_path: Path) -> None:
     for key in list(keyframe.findall("key")):
         if key.get("name") == "home":
             keyframe.remove(key)
-    home_qpos = np.zeros(model.nq, dtype=np.float64)
-    home_qpos[: min(len(ARM_HOME_QPOS), model.nq)] = ARM_HOME_QPOS[: min(len(ARM_HOME_QPOS), model.nq)]
+    configured_home = np.concatenate([ARM_HOME_QPOS, DEXHAND_HOME_QPOS])
+    if model.nq < len(configured_home):
+        raise ValueError(f"Expected at least {len(configured_home)} qpos values, got {model.nq}.")
+    # Free-jointed scene objects add seven qpos values each.  Preserve their
+    # authored table poses while replacing only the robot's home configuration.
+    home_qpos = model.qpos0.copy()
+    home_qpos[: len(configured_home)] = configured_home
     ET.SubElement(
         keyframe,
         "key",
         {
             "name": "home",
             "qpos": " ".join(f"{v:.6f}" for v in home_qpos),
+            "ctrl": " ".join(f"{v:.6f}" for v in configured_home[: model.nu]),
         },
     )
 
-    ET.indent(tree, space="  ")
+    indent_xml(tree)
     tree.write(mjcf_path, encoding="utf-8", xml_declaration=False)
 
 
@@ -400,7 +498,7 @@ def build_scene(args: argparse.Namespace) -> None:
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     urdf_output = args.output.with_suffix(".urdf") if args.output.suffix == ".xml" else args.output
-    ET.indent(arm_tree, space="  ")
+    indent_xml(arm_tree)
     arm_tree.write(urdf_output, encoding="utf-8", xml_declaration=True)
     print(f"Wrote {urdf_output}")
 

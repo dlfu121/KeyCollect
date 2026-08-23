@@ -6,7 +6,15 @@ import logging
 
 import numpy as np
 
+from lerobot_robot_mujoco.rm65_kinematics import (
+    damped_least_squares,
+    quaternion_xyzw_to_matrix,
+    rotation_matrix_to_quaternion_xyzw,
+    rotation_matrix_to_vector,
+    rotation_vector_to_matrix,
+)
 from lerobot_robot_mujoco.simulation import MuJoCoSimulation
+from lerobot_robot_mujoco.safety import unwrap_revolute_targets
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +62,6 @@ class IKSolver:
         Returns:
             Joint positions array, or None if no convergence.
         """
-        import mujoco
-
         for iteration in range(self.max_iterations):
             # Current EE pose
             ee_pose = self.sim.get_ee_pose(self.ee_site)
@@ -68,15 +74,9 @@ class IKSolver:
             # Orientation error (if specified)
             ori_err = np.zeros(3)
             if target_quat is not None:
-                # Compute orientation error via quaternion difference
-                err_quat = np.zeros(4)
-                mujoco.mju_negQuat(err_quat, current_quat)
-                mujoco.mju_mulQuat(err_quat, target_quat, err_quat)
-                # Convert to rotation vector (axis-angle)
-                angle = 2.0 * np.arccos(np.clip(err_quat[3], -1.0, 1.0))
-                if abs(angle) > 1e-6:
-                    axis = err_quat[:3] / np.sin(angle / 2.0)
-                    ori_err = axis * angle
+                target_rotation = quaternion_xyzw_to_matrix(target_quat)
+                current_rotation = quaternion_xyzw_to_matrix(current_quat)
+                ori_err = rotation_matrix_to_vector(target_rotation @ current_rotation.T)
 
             # Check convergence
             pos_converged = np.linalg.norm(pos_err) < self.pos_tol
@@ -97,11 +97,8 @@ class IKSolver:
             if target_quat is None:
                 jac = jac[:3, :]  # Translational only
 
-            # Damped Least Squares
-            n_dof = jac.shape[1]
-            jtj = jac.T @ jac
-            damped = jtj + (self.damping ** 2) * np.eye(n_dof)
-            delta_q = np.linalg.solve(damped, jac.T @ error)
+            # Official RM65 task-space Damped Least Squares form.
+            delta_q = damped_least_squares(jac, error, self.damping)
 
             # Clip to max step
             delta_q = np.clip(delta_q, -self.max_joint_step, self.max_joint_step)
@@ -109,6 +106,7 @@ class IKSolver:
             # Apply
             current_q = self.sim.get_joint_positions(self.joint_names)
             target_q = current_q + delta_q
+            target_q = unwrap_revolute_targets(current_q, target_q)
 
             # Clip to joint limits
             target_q = self.sim.clip_to_joint_limits(self.joint_names, target_q, margin=0.01)
@@ -134,8 +132,6 @@ class IKSolver:
         Returns:
             Joint positions array, or None if no convergence.
         """
-        import mujoco
-
         # Current EE pose
         ee_pose = self.sim.get_ee_pose(self.ee_site)
         current_pos = ee_pose[:3]
@@ -147,15 +143,9 @@ class IKSolver:
         # Target orientation: apply delta as incremental rotation
         target_quat = None
         if np.linalg.norm(delta_euler) > 1e-6:
-            # Convert Euler delta to quaternion
-            # Using axis-angle representation
-            angle = np.linalg.norm(delta_euler)
-            axis = delta_euler / angle
-            delta_quat = np.zeros(4)
-            delta_quat[3] = np.cos(angle / 2.0)
-            delta_quat[:3] = axis * np.sin(angle / 2.0)
-
-            target_quat = np.zeros(4)
-            mujoco.mju_mulQuat(target_quat, delta_quat, current_quat)
+            current_rotation = quaternion_xyzw_to_matrix(current_quat)
+            target_quat = rotation_matrix_to_quaternion_xyzw(
+                current_rotation @ rotation_vector_to_matrix(delta_euler)
+            )
 
         return self.solve(target_pos, target_quat)
