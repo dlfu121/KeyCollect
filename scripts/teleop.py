@@ -26,13 +26,24 @@ if str(TELEOP_PKG) not in sys.path:
 from rm65.rm65_ik import RM65IKContinuitySelector, RM65Kinematics, pose_matrix
 
 from lerobot_robot_mujoco.simulation import MuJoCoSimulation
-from lerobot_robot_mujoco.rm65_kinematics import CartesianPoseTarget, damped_least_squares
+from lerobot_robot_mujoco.rm65_kinematics import CartesianPoseTarget
 from lerobot_teleoperator_mocap_ros import MocapRosTeleop, MocapRosTeleopConfig
 from lerobot_teleoperator_mocap_ros.config_mocap_ros import RIGHT_HAND_JOINTS
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_STATE_PATH = ROOT / "assets" / "scenes" / "current_state.npz"
+# RM65-6F theoretical flange reach: a2 + d4 + d6 = 0.6385 m.
+RM65_BASE_HEIGHT_M = 0.2405
+RM65_FLANGE_LINK_LENGTHS_M = (0.256, 0.210, 0.1725)
+RM65_THEORETICAL_FLANGE_RADIUS_M = sum(RM65_FLANGE_LINK_LENGTHS_M)
+# Keep task objects away from the fully extended singular posture and leave
+# room for the requested flange orientation.
+RM65_TASK_RADIUS_MARGIN_M = 0.05
+RM65_TASK_RADIUS_M = RM65_THEORETICAL_FLANGE_RADIUS_M - RM65_TASK_RADIUS_MARGIN_M
+SCREWDRIVER_PALM_FRONT_OFFSETS = (0.04, 0.22)
+SCREWDRIVER_PALM_RIGHT_OFFSETS = (0.04, 0.20)
+SCREWDRIVER_Y_AXIS_ANGLE_DEG = (-35.0, 35.0)
 
 
 def has_motion(action: dict[str, object]) -> bool:
@@ -71,49 +82,79 @@ def save_state(sim: MuJoCoSimulation, path: Path) -> None:
     print(f"Saved current state: {path}")
 
 
-def action_to_joint_targets(
+def randomize_screwdrivers(
     sim: MuJoCoSimulation,
-    action: dict[str, object],
-    arm_joints: list[str],
-    ee_body: str,
-    pose_target: CartesianPoseTarget,
-    damping: float = 0.04,
-    max_joint_step: float = 0.10,
-) -> np.ndarray:
-    body_id = mujoco.mj_name2id(sim.model, mujoco.mjtObj.mjOBJ_BODY, ee_body)
-    if body_id < 0:
-        raise ValueError(f"EE body '{ee_body}' not found.")
+    rng: np.random.Generator,
+    x_bounds: tuple[float, float],
+    y_bounds: tuple[float, float],
+) -> dict[str, np.ndarray]:
+    """Randomize both handles mainly in the palm's right-front region."""
+    palm_site = mujoco.mj_name2id(sim.model, mujoco.mjtObj.mjOBJ_SITE, "dexhand_palm_center")
+    if palm_site < 0:
+        raise ValueError("Scene does not contain the 'dexhand_palm_center' site.")
+    palm_xy = sim.data.site_xpos[palm_site, :2].copy()
+    palm_rotation = sim.data.site_xmat[palm_site].reshape(3, 3)
+    front_xy = palm_rotation[:2, 2].copy()
+    right_xy = -palm_rotation[:2, 1].copy()
+    front_xy /= np.linalg.norm(front_xy)
+    right_xy /= np.linalg.norm(right_xy)
 
-    translation_world = np.asarray(
-        [action.get("delta_x", 0.0), action.get("delta_y", 0.0), action.get("delta_z", 0.0)],
-        dtype=np.float64,
+    link1_id = mujoco.mj_name2id(sim.model, mujoco.mjtObj.mjOBJ_BODY, "link_1")
+    if link1_id < 0:
+        raise ValueError("Scene does not contain the RM65 'link_1' body.")
+    # link_1 is located RM65 d1 above the robot base; subtracting d1 yields
+    # the base-frame origin used by the analytical kinematics.
+    base_position = sim.data.xpos[link1_id].copy()
+    base_position[2] -= RM65_BASE_HEIGHT_M
+    body_name = "screwdriver_red"
+    handle_height = sim.data.xpos[sim.get_body_id(body_name), 2]
+
+    handle_center = None
+    for _ in range(4096):
+        candidate = (
+            palm_xy
+            + rng.uniform(*SCREWDRIVER_PALM_FRONT_OFFSETS) * front_xy
+            + rng.uniform(*SCREWDRIVER_PALM_RIGHT_OFFSETS) * right_xy
+        )
+        inside_workspace = (
+            x_bounds[0] <= candidate[0] <= x_bounds[1]
+            and y_bounds[0] <= candidate[1] <= y_bounds[1]
+        )
+        inside_flange_radius = (
+            np.linalg.norm(
+                np.array([candidate[0], candidate[1], handle_height]) - base_position
+            )
+            <= RM65_TASK_RADIUS_M
+        )
+        if inside_workspace and inside_flange_radius:
+            handle_center = candidate
+            break
+    if handle_center is None:
+        raise RuntimeError(
+            "Could not place the screwdriver on the palm's right side within "
+            f"the RM65 task radius ({RM65_TASK_RADIUS_M:.4f} m)."
+        )
+
+    centers: dict[str, np.ndarray] = {}
+    qpos_addr = sim.get_body_qpos_addr(body_name)
+    angle_from_y = np.deg2rad(rng.uniform(*SCREWDRIVER_Y_AXIS_ANGLE_DEG))
+    yaw = 0.5 * np.pi + angle_from_y
+    sim.data.qpos[qpos_addr + 3 : qpos_addr + 7] = (
+        np.cos(0.5 * yaw), 0.0, 0.0, np.sin(0.5 * yaw)
     )
-    rotation_local = np.asarray(
-        [action.get("delta_roll", 0.0), action.get("delta_pitch", 0.0), action.get("delta_yaw", 0.0)],
-        dtype=np.float64,
-    )
-    ee_position_world = sim.data.xpos[body_id].copy()
-    ee_rotation_world = sim.data.xmat[body_id].reshape(3, 3)
-    pose_target.integrate(translation_world, rotation_local)
-    error = pose_target.error(ee_position_world, ee_rotation_world)
-
-    jacp = np.zeros((3, sim.model.nv))
-    jacr = np.zeros((3, sim.model.nv))
-    mujoco.mj_jacBody(sim.model, sim.data, jacp, jacr, body_id)
-    full_jac = np.vstack([jacp, jacr])
-    cols = []
-    for name in arm_joints:
-        joint_id = mujoco.mj_name2id(sim.model, mujoco.mjtObj.mjOBJ_JOINT, name)
-        cols.append(int(sim.model.jnt_dofadr[joint_id]))
-    jac = full_jac[:, cols]
-    current_q = sim.get_joint_positions(arm_joints)
-
-    if np.linalg.norm(error) > 1e-9:
-        dq = damped_least_squares(jac, error, damping)
-        dq = np.clip(dq, -max_joint_step, max_joint_step)
-        current_q = sim.clip_to_joint_limits(arm_joints, current_q + dq)
-
-    return current_q
+    sim.forward()
+    body_id = sim.get_body_id(body_name)
+    rotation = sim.data.xmat[body_id].reshape(3, 3)
+    handle_offset = rotation @ np.array([-0.04, 0.0, 0.0])
+    root_position = sim.data.xpos[body_id].copy()
+    root_position[:2] = handle_center - handle_offset[:2]
+    sim.set_body_position(body_name, root_position)
+    joint_id = int(sim.model.body_jntadr[body_id])
+    dof_addr = int(sim.model.jnt_dofadr[joint_id])
+    sim.data.qvel[dof_addr : dof_addr + 6] = 0.0
+    centers[body_name] = root_position + handle_offset
+    sim.forward()
+    return centers
 
 
 def analytic_action_to_joint_targets(
@@ -124,6 +165,8 @@ def analytic_action_to_joint_targets(
     selector: RM65IKContinuitySelector,
 ) -> np.ndarray | None:
     """Solve the absolute Cartesian target with the RM65 closed-form IK."""
+    previous_position = pose_target.position_world.copy()
+    previous_rotation = pose_target.rotation_world.copy()
     translation_world = np.asarray(
         [action.get("delta_x", 0.0), action.get("delta_y", 0.0), action.get("delta_z", 0.0)],
         dtype=np.float64,
@@ -149,6 +192,11 @@ def analytic_action_to_joint_targets(
     try:
         solution = selector.solve(target_base, initial_seed=current_q)
     except Exception as exc:
+        # Keep the Cartesian command at the last reachable pose.  Otherwise
+        # rejected mocap deltas accumulate beyond the workspace boundary and
+        # the operator must move a long way back before control resumes.
+        pose_target.position_world[:] = previous_position
+        pose_target.rotation_world[:] = previous_rotation
         logger.warning("Analytic RM65 IK failed; holding the current arm target: %s", exc)
         return None
     return sim.clip_to_joint_limits(arm_joints, solution.joints)
@@ -353,12 +401,6 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--cameras", nargs="*", default=["table_camera", "wrist_overhead_camera"], help="Camera names to show.")
     parser.add_argument("--ee-body", default="link_6", help="Body used as the end-effector control frame.")
-    parser.add_argument(
-        "--ik-solver",
-        choices=("dls", "analytic"),
-        default="analytic",
-        help="Arm IK backend. 'dls' restores the previous 1.0 Jacobian solver.",
-    )
     parser.add_argument("--transport", choices=("auto", "rospy", "rosbridge"), default="auto", help="ROS1 transport.")
     parser.add_argument("--wrist-topic", default="/right_wrist_pose", help="ROS1 wrist PoseStamped topic.")
     parser.add_argument("--joint-topic", default="/right_joint_poses", help="ROS1 glove Float32MultiArray topic.")
@@ -366,7 +408,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--orientation-scale", type=float, default=1.0, help="Wrist orientation gain.")
     parser.add_argument("--finger-scale", type=float, default=1.0, help="Finger retargeting gain.")
     parser.add_argument("--stale-timeout", type=float, default=0.25, help="Seconds before stale mocap input is held.")
-    parser.add_argument("--max-joint-step", type=float, default=0.10, help="Maximum arm joint change per control tick, in radians.")
+    parser.add_argument(
+        "--fixed-screwdrivers",
+        "--fixed-red-screwdriver",
+        dest="fixed_screwdrivers",
+        action="store_true",
+        help="Keep the authored screwdriver pose instead of randomizing it.",
+    )
+    parser.add_argument("--screwdriver-x-range", nargs=2, type=float, default=(-0.22, 0.02), metavar=("MIN", "MAX"))
+    parser.add_argument("--screwdriver-y-range", nargs=2, type=float, default=(-0.22, 0.04), metavar=("MIN", "MAX"))
+    parser.add_argument("--random-seed", type=int, default=None, help="Optional reproducible object-randomization seed.")
     parser.add_argument("--state-out", type=Path, default=DEFAULT_STATE_PATH, help="Path to save the latest qpos/qvel state for tune_camera.py.")
     return parser.parse_args()
 
@@ -376,6 +427,18 @@ def main() -> int:
     sim = MuJoCoSimulation(args.scene)
     sim.load()
     sim.reset()
+    if not args.fixed_screwdrivers:
+        screwdriver_centers = randomize_screwdrivers(
+            sim,
+            np.random.default_rng(args.random_seed),
+            tuple(args.screwdriver_x_range),
+            tuple(args.screwdriver_y_range),
+        )
+        for body_name, handle_center in screwdriver_centers.items():
+            print(
+                f"Randomized {body_name} handle center: "
+                f"xyz=({handle_center[0]:.3f}, {handle_center[1]:.3f}, {handle_center[2]:.3f})"
+            )
 
     arm_joints = ["joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"]
     gripper_joints = list(RIGHT_HAND_JOINTS)
@@ -419,9 +482,7 @@ def main() -> int:
     pose_target = CartesianPoseTarget.from_pose(
         sim.data.xpos[ee_body_id], sim.data.xmat[ee_body_id].reshape(3, 3)
     )
-    analytic_selector = None
-    if args.ik_solver == "analytic":
-        analytic_selector = RM65IKContinuitySelector(RM65Kinematics("RM65-6F"), sample_period=period)
+    analytic_selector = RM65IKContinuitySelector(RM65Kinematics("RM65-6F"), sample_period=period)
     if camera_panel.enabled:
         print(f"Camera panel running: {', '.join(name for name, _ in camera_panel.cameras)}")
     elif args.cameras:
@@ -438,21 +499,11 @@ def main() -> int:
         while sim.sync_viewer() and teleop.is_connected and (not camera_panel.enabled or camera_panel.is_running()):
             camera_panel.update()
             teleop_action = teleop.get_action()
-            if analytic_selector is not None:
-                arm_targets = analytic_action_to_joint_targets(
-                    sim, teleop_action, pose_target, arm_joints, analytic_selector
-                )
-                if arm_targets is None:
-                    arm_targets = sim.get_joint_positions(arm_joints)
-            else:
-                arm_targets = action_to_joint_targets(
-                    sim,
-                    teleop_action,
-                    arm_joints,
-                    args.ee_body,
-                    pose_target,
-                    max_joint_step=args.max_joint_step,
-                )
+            arm_targets = analytic_action_to_joint_targets(
+                sim, teleop_action, pose_target, arm_joints, analytic_selector
+            )
+            if arm_targets is None:
+                arm_targets = sim.get_joint_positions(arm_joints)
             current_hand = apply_hand_action(
                 sim,
                 teleop_action,

@@ -36,7 +36,7 @@ class MuJoCoRobotConfig(RobotConfig):
     cameras: dict[str, CameraConfig] = field(default_factory=dict)
 
     # Simulation
-    physics_dt: float = 0.002
+    physics_dt: float = 0.001
     control_fps: int = 30
     show_viewer: bool = False
 
@@ -53,8 +53,11 @@ class MuJoCoRobotConfig(RobotConfig):
 
     # Object randomization
     randomize_screwdrivers: bool = True
-    # Bounds are the central, front portion of the 1.0 x 0.8 m work table,
-    # inside the RM65's comfortable downward-grasp workspace.
-    screwdriver_workspace_x: tuple[float, float] = (-0.32, 0.20)
-    screwdriver_workspace_y: tuple[float, float] = (-0.28, 0.28)
-    screwdriver_min_separation_m: float = 0.12
+    # Sample handle centres relative to the palm.  At the authored home pose,
+    # palm-forward is approximately world +X and palm-right is world -Y.
+    screwdriver_workspace_x: tuple[float, float] = (-0.22, 0.02)
+    screwdriver_workspace_y: tuple[float, float] = (-0.22, 0.04)
+    screwdriver_palm_front_offsets: tuple[float, float] = (0.04, 0.22)
+    screwdriver_palm_right_offsets: tuple[float, float] = (0.04, 0.20)
+    # Signed planar angle from world +Y; zero means parallel to the y axis.
+    screwdriver_y_axis_angle_deg: tuple[float, float] = (-35.0, 35.0)

@@ -13,23 +13,65 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 # This wrist-roll reference keeps the DexHand palm facing downward at reset.
 # Runtime IK still unwraps equivalent J6 angles to avoid unnecessary turns.
-ARM_HOME_QPOS = np.deg2rad([0.0, -60.0, -45.0, 0.0, 10.0, 180.0])
-DEXHAND_HOME_QPOS = np.zeros(20, dtype=np.float64)
+ARM_HOME_QPOS = np.deg2rad([0.0, -23.0, -99.0, 0.0, 27.0, 180.0])
+# DEXHAND_HOME_QPOS = np.zeros(20, dtype=np.float64)
+DEXHAND_HOME_QPOS = np.deg2rad([
+    # 拇指：joint1_1 ～ joint1_4
+    50.0, 30.0, 0.0, 0.0,
+
+    # 食指：joint2_1 ～ joint2_4
+    0.0, 0.0, 0.0, 0.0,
+
+    # 中指：joint3_1 ～ joint3_4
+    0.0, 0.0, 0.0, 0.0,
+
+    # 无名指：joint4_1 ～ joint4_4
+    0.0, 0.0, 0.0, 0.0,
+
+    # 小指：joint5_1 ～ joint5_4
+    0.0, 0.0, 0.0, 0.0,
+])
 ARM_POSITION_GAINS = (
-    (1200.0, 70.0),
-    (1200.0, 70.0),
-    (800.0, 55.0),
-    (500.0, 35.0),
-    (350.0, 30.0),
-    (250.0, 20.0),
+    (700.0, 55.0),
+    (700.0, 55.0),
+    (450.0, 40.0),
+    (280.0, 25.0),
+    (220.0, 20.0),
+    (160.0, 15.0),
 )
-DEXHAND_POSITION_GAIN = (100.0, 5.0)
+ARM_FORCE_LIMITS = (40.0, 40.0, 24.0, 7.0, 6.0, 5.0)
+DEXHAND_POSITION_GAIN = (25.0, 2.0)
+DEXHAND_FORCE_LIMIT = 0.5
+# The URDF joint_properties tag is not preserved by MuJoCo's URDF importer.
+# Keep a small amount of physical damping/inertia on the gram-scale finger
+# links so contact cannot produce an unbounded acceleration.
+DEXHAND_JOINT_DAMPING = 0.10
+DEXHAND_JOINT_ARMATURE = 0.0002
+DEXHAND_JOINT_FRICTIONLOSS = 0.005
+SCREWDRIVER_HEX_MESH = "screwdriver_hex_handle"
+SCREWDRIVER_FLAT_HANDLE_QUAT = "0.683013 0.183013 0.683013 0.183013"
 
 # Work surface layout (metres).  The robot stand top is at z=0.60 m;
 # keeping the work surface slightly above it makes the objects easy to reach.
-WORK_TABLE_CENTER_X = 0.0
-WORK_TABLE_HEIGHT = 0.65
+WORK_TABLE_CENTER_X = 0
+WORK_TABLE_HEIGHT = 0.7
 WORK_TABLE_THICKNESS = 0.04
+
+# Low fixed camera: 8 cm in front of the RM65 base centre and 10 cm above the
+# tabletop.  A wide field of view keeps the full randomized screwdriver
+# envelope visible despite the deliberately low mounting height.
+TABLE_CAMERA_POS = (-0.62, 0.0, WORK_TABLE_HEIGHT + 0.10)
+TABLE_CAMERA_TARGET = (-0.04, -0.08, WORK_TABLE_HEIGHT + 0.02)
+TABLE_CAMERA_FOVY_DEG = 100
+
+# Keep the legacy observation name, but mount this camera at the palm.  The
+# palm-centre site is (0.000175, 0.001232, 0.016614) in link_6; add 20 mm along
+# local +X (the outward palm normal) so the lens is not buried in the mesh.
+# Aim between the fingertips and table to observe finger closure and contact.
+HAND_BACK_CAMERA_POS = (0.020175, 0.001232, 0.016614)
+HAND_BACK_CAMERA_TARGET = (0.10, 0.0, 0.20)
+HAND_BACK_CAMERA_UP = (-1.0, 0.0, 0.0)
+HAND_BACK_CAMERA_FOVY_DEG = 100
 
 
 def indent_xml(tree: ET.ElementTree, space: str = "  ") -> None:
@@ -235,9 +277,10 @@ def append_work_table_scene(robot: ET.Element) -> None:
     ):
         add_box(robot, name, "world", f"{x} {y} {leg_center_z:.3f}", f"0.08 0.08 {leg_height:.3f}", "0.35 0.35 0.38 1")
 
-    object_z = WORK_TABLE_HEIGHT + 0.025
-    add_screwdriver(robot, "screwdriver_red", f"-0.18 0.12 {object_z:.3f}", "0.85 0.15 0.15 1", 0.35)
-    add_screwdriver(robot, "screwdriver_blue", f"0.12 -0.16 {object_z:.3f}", "0.15 0.35 0.85 1", -0.8)
+    # The flat hex-handle face is 18 mm from the centre; start it directly on
+    # the tabletop instead of dropping it from above and inducing a flip.
+    object_z = WORK_TABLE_HEIGHT + 0.018
+    add_screwdriver(robot, "screwdriver_red", f"-0.08 -0.02 {object_z:.3f}", "0.85 0.15 0.15 1", np.deg2rad(70.0))
 
 
 def append_actuators(robot: ET.Element) -> None:
@@ -342,7 +385,76 @@ def export_mjcf(urdf_path: Path, mjcf_path: Path) -> None:
     for body in robot_root.iter("body"):
         body.set("gravcomp", "1")
 
-    ET.SubElement(root, "option", {"timestep": "0.002", "integrator": "implicitfast"})
+    for joint in root.findall(".//joint"):
+        if joint.get("name", "").startswith("r_f_joint"):
+            joint.set("damping", f"{DEXHAND_JOINT_DAMPING:g}")
+            joint.set("armature", f"{DEXHAND_JOINT_ARMATURE:g}")
+            joint.set("frictionloss", f"{DEXHAND_JOINT_FRICTIONLOSS:g}")
+
+    # Fixed URDF links are fused during import.  This is the hand-base mesh
+    # centre expressed in link_6 coordinates after MuJoCo applies the STL's
+    # reference-frame offset; expose it for palm-centred object randomization.
+    hand_body = root.find(".//body[@name='link_6']")
+    if hand_body is None:
+        raise ValueError("Exported MJCF does not contain the wrist body 'link_6'.")
+    ET.SubElement(
+        hand_body,
+        "site",
+        {
+            "name": "dexhand_palm_center",
+            "pos": "0.000175 0.001232 0.016614",
+            "size": "0.001",
+            "rgba": "0 0 0 0",
+        },
+    )
+
+    # MuJoCo's URDF importer has no native hexagonal primitive.  Replace the
+    # visual and collision handles of the screwdriver with a convex hex mesh.
+    # The extra 30-degree roll puts a complete hex face, rather than an edge,
+    # against the tabletop so the screwdriver does not tip at reset.
+    asset = root.find("asset")
+    if asset is None:
+        asset = ET.SubElement(root, "asset")
+    ET.SubElement(
+        asset,
+        "mesh",
+        {"name": SCREWDRIVER_HEX_MESH, "file": "screwdriver_hex_handle.obj"},
+    )
+    for body_name in ("screwdriver_red",):
+        screwdriver = root.find(f".//body[@name='{body_name}']")
+        if screwdriver is None:
+            raise ValueError(f"Exported MJCF does not contain '{body_name}'.")
+        handle_geoms = [
+            geom
+            for geom in screwdriver.findall("geom")
+            if geom.get("type") == "cylinder" and geom.get("pos") == "-0.04 0 0"
+        ]
+        if len(handle_geoms) != 2:
+            raise ValueError(f"Expected two {body_name} handle geoms, got {len(handle_geoms)}.")
+        for geom in handle_geoms:
+            geom.set("type", "mesh")
+            geom.set("mesh", SCREWDRIVER_HEX_MESH)
+            geom.set("quat", SCREWDRIVER_FLAT_HANDLE_QUAT)
+            geom.attrib.pop("size", None)
+
+    # Compliant contacts and a 1 ms physics step prevent a position-controlled
+    # hand from injecting an impulsive acceleration into the rigid tabletop.
+    ET.SubElement(
+        root,
+        "option",
+        {"timestep": "0.001", "integrator": "implicitfast", "solver": "Newton", "iterations": "100"},
+    )
+    default = ET.SubElement(root, "default")
+    ET.SubElement(
+        default,
+        "geom",
+        {
+            "condim": "4",
+            "friction": "1.5 0.01 0.001",
+            "solref": "0.04 1",
+            "solimp": "0.85 0.95 0.005 0.5 2",
+        },
+    )
     ET.SubElement(root, "statistic", {"center": "0 0 0.7", "extent": "3.2"})
     visual = ET.SubElement(root, "visual")
     ET.SubElement(visual, "headlight", {"ambient": "0.35 0.35 0.35", "diffuse": "0.65 0.65 0.65", "specular": "0.2 0.2 0.2"})
@@ -362,17 +474,16 @@ def export_mjcf(urdf_path: Path, mjcf_path: Path) -> None:
             if not 0 <= arm_index < len(ARM_POSITION_GAINS):
                 continue
             kp, kv = ARM_POSITION_GAINS[arm_index]
+            force_lower, force_upper = -ARM_FORCE_LIMITS[arm_index], ARM_FORCE_LIMITS[arm_index]
             actuator_name = joint_name
         elif joint_name.startswith("r_f_joint"):
             kp, kv = DEXHAND_POSITION_GAIN
+            force_lower, force_upper = -DEXHAND_FORCE_LIMIT, DEXHAND_FORCE_LIMIT
             actuator_name = f"act_{joint_name}"
         else:
             continue
 
         lower, upper = model.jnt_range[joint_id]
-        force_lower, force_upper = model.jnt_actfrcrange[joint_id]
-        if force_lower >= force_upper:
-            force_lower, force_upper = -10.0, 10.0
         ET.SubElement(
             actuator,
             "position",
@@ -387,11 +498,46 @@ def export_mjcf(urdf_path: Path, mjcf_path: Path) -> None:
             },
         )
 
-    def look_at_xyaxes(pos: tuple[float, float, float], target: tuple[float, float, float]) -> str:
+    # Give the physical tabletop collision geom a stable name.  Put it in a
+    # collision group that still supports objects but ignores the DexHand, so
+    # tabletop penetration never blocks grasp-data collection.
+    table_center = np.array([WORK_TABLE_CENTER_X, 0.0, WORK_TABLE_HEIGHT - WORK_TABLE_THICKNESS / 2])
+    table_half_size = np.array([0.5, 0.4, WORK_TABLE_THICKNESS / 2])
+    for geom in root.findall(".//geom"):
+        if geom.get("type") != "box" or geom.get("contype", "1") == "0":
+            continue
+        position = np.fromstring(geom.get("pos", "0 0 0"), sep=" ")
+        size = np.fromstring(geom.get("size", ""), sep=" ")
+        if position.shape == (3,) and size.shape == (3,) and np.allclose(position, table_center) and np.allclose(size, table_half_size):
+            geom.set("name", "work_table_collision")
+            geom.set("contype", "2")
+            geom.set("conaffinity", "1")
+            break
+
+    # Hand collision geoms use type 4.  With affinity 1 they still collide with
+    # default type-1 task objects, while the type-2 tabletop is ignored.  Do
+    # not change the RM65 link_6 geom itself; only its fused hand-base mesh and
+    # the finger descendants belong to this collision group.
+    for geom in hand_body.findall("geom"):
+        if geom.get("mesh") == "right_hand_base" and geom.get("contype", "1") != "0":
+            geom.set("contype", "4")
+            geom.set("conaffinity", "1")
+    for finger_body in hand_body.findall(".//body"):
+        for geom in finger_body.findall("geom"):
+            if geom.get("contype", "1") != "0":
+                geom.set("contype", "4")
+                geom.set("conaffinity", "1")
+
+    def look_at_xyaxes(
+        pos: tuple[float, float, float],
+        target: tuple[float, float, float],
+        up: tuple[float, float, float] = (0.0, 0.0, 1.0),
+    ) -> str:
         forward = np.array(target, dtype=np.float64) - np.array(pos, dtype=np.float64)
         forward /= np.linalg.norm(forward)
-        world_up = np.array([0.0, 0.0, 1.0], dtype=np.float64)
-        x_axis = np.cross(forward, world_up)
+        up_axis = np.array(up, dtype=np.float64)
+        up_axis /= np.linalg.norm(up_axis)
+        x_axis = np.cross(forward, up_axis)
         if np.linalg.norm(x_axis) < 1e-9:
             x_axis = np.array([1.0, 0.0, 0.0], dtype=np.float64)
         x_axis /= np.linalg.norm(x_axis)
@@ -421,12 +567,9 @@ def export_mjcf(urdf_path: Path, mjcf_path: Path) -> None:
                 "camera",
                 {
                     "name": "table_camera",
-                    "pos": f"{WORK_TABLE_CENTER_X - 0.18:.3f} 0.00 {WORK_TABLE_HEIGHT + 0.16:.3f}",
-                    "xyaxes": look_at_xyaxes(
-                        (WORK_TABLE_CENTER_X - 0.18, 0.0, WORK_TABLE_HEIGHT + 0.16),
-                        (WORK_TABLE_CENTER_X, 0.0, WORK_TABLE_HEIGHT + 0.02),
-                    ),
-                    "fovy": "65",
+                    "pos": " ".join(f"{value:.3f}" for value in TABLE_CAMERA_POS),
+                    "xyaxes": look_at_xyaxes(TABLE_CAMERA_POS, TABLE_CAMERA_TARGET),
+                    "fovy": str(TABLE_CAMERA_FOVY_DEG),
                 },
             ),
         )
@@ -438,9 +581,13 @@ def export_mjcf(urdf_path: Path, mjcf_path: Path) -> None:
                     "camera",
                     {
                         "name": "wrist_overhead_camera",
-                        "pos": "0 0 0.22",
-                        "euler": "0 0 0",
-                        "fovy": "70",
+                        "pos": " ".join(f"{value:.3f}" for value in HAND_BACK_CAMERA_POS),
+                        "xyaxes": look_at_xyaxes(
+                            HAND_BACK_CAMERA_POS,
+                            HAND_BACK_CAMERA_TARGET,
+                            HAND_BACK_CAMERA_UP,
+                        ),
+                        "fovy": str(HAND_BACK_CAMERA_FOVY_DEG),
                     },
                 ),
             )
@@ -464,7 +611,10 @@ def export_mjcf(urdf_path: Path, mjcf_path: Path) -> None:
         {
             "name": "home",
             "qpos": " ".join(f"{v:.6f}" for v in home_qpos),
-            "ctrl": " ".join(f"{v:.6f}" for v in configured_home[: model.nu]),
+            # The temporary URDF model has no actuators yet; the 26 position
+            # servos are appended above while exporting MJCF.  Therefore use
+            # the complete robot home vector instead of the temporary model.nu.
+            "ctrl": " ".join(f"{v:.6f}" for v in configured_home),
         },
     )
 

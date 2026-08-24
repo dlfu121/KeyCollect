@@ -47,14 +47,16 @@ cameras:
     fps: 30
 
 # Simulation
-physics_dt: 0.002
+physics_dt: 0.001
 control_fps: 30
 
-# Randomize each screwdriver on reset within the RM65's comfortable table reach.
+# Randomize the screwdriver in the palm's right-front region.
 randomize_screwdrivers: true
-screwdriver_workspace_x: [-0.32, 0.20]
-screwdriver_workspace_y: [-0.28, 0.28]
-screwdriver_min_separation_m: 0.12
+screwdriver_workspace_x: [-0.22, 0.02]
+screwdriver_workspace_y: [-0.22, 0.04]
+screwdriver_palm_front_offsets: [0.04, 0.22]
+screwdriver_palm_right_offsets: [0.04, 0.20]
+screwdriver_y_axis_angle_deg: [-35.0, 35.0]
 
 # Safety
 max_joint_step: 0.1

@@ -250,6 +250,15 @@ class CameraTuner:
             self._apply_state_file(state_path)
         elif home_q is not None:
             self._apply_home_q(home_q)
+        else:
+            # Use the scene's authored robot/object pose so cameras attached
+            # to link_6 are displayed at their real home-world position.
+            home_id = mujoco.mj_name2id(
+                self.model, mujoco.mjtObj.mjOBJ_KEY, "home"
+            )
+            if home_id >= 0:
+                mujoco.mj_resetDataKeyframe(self.model, self.data, home_id)
+            mujoco.mj_forward(self.model, self.data)
 
         # 每个相机的状态（单一数据源）:
         #   pos(3,) 父 body 局部坐标, euler(3,) rad
@@ -594,8 +603,12 @@ class CameraTuner:
             self.radio.set_active(idx)
             self._updating_radio = False
         st = self.state[self.cur_cam]
+        self._apply_state()
+        cid = self.cam_ids[self.cur_cam]
+        world_pos = self.data.cam_xpos[cid]
         print(f"[切换] 当前相机: {self.cur_cam} (parent: {self._parent_body_name(self.cur_cam)})")
-        print(f"  pos  = {np.array2string(st['pos'], precision=4)}")
+        print(f"  local pos = {np.array2string(st['pos'], precision=4)}")
+        print(f"  world pos = {np.array2string(world_pos, precision=4)}")
         print(f"  euler= {np.array2string(np.degrees(st['euler']), precision=2)} (deg)")
 
     def _on_radio_camera(self, label):

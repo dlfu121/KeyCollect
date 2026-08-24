@@ -103,14 +103,6 @@
       <geom name="screwdriver_red_shaft" type="cylinder" fromto="0.03 0 0 0.115 0 0"
             size="0.004" rgba="0.75 0.75 0.78 1" condim="6" friction="1 0.02 0.02"/>
     </body>
-    <body name="screwdriver_blue" pos="-0.1 0.2 0.756" euler="0 0 -1.1">
-      <freejoint/>
-      <geom name="screwdriver_blue_handle" type="cylinder" fromto="-0.045 0 0 0.03 0 0"
-            size="0.014" rgba="0.15 0.25 0.85 1" condim="6" friction="1 0.02 0.02"/>
-      <geom name="screwdriver_blue_shaft" type="cylinder" fromto="0.03 0 0 0.115 0 0"
-            size="0.004" rgba="0.75 0.75 0.78 1" condim="6" friction="1 0.02 0.02"/>
-    </body>
-
     <!-- ================= 工人（静态站姿，面朝主工作台） ================= -->
     <body name="worker" pos="-10.0 0 0">
       <geom name="w_leg_l" type="capsule" fromto="0  0.11 0.04 0  0.11 0.46" size="0.085" material="worker"/>

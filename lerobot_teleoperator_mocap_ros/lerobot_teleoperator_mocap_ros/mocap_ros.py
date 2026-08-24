@@ -44,8 +44,10 @@ class MocapRosTeleop(Teleoperator):
         self._wrist_quat: np.ndarray | None = None
         self._finger_initial: np.ndarray | None = None
         self._fingers: np.ndarray | None = None
+        self._filtered_fingers: np.ndarray | None = None
         self._last_wrist_time = 0.0
         self._last_finger_time = 0.0
+        self._last_finger_outlier_warning = 0.0
 
         self._commanded_pos = np.zeros(3, dtype=np.float64)
         self._commanded_rot = np.asarray([0.0, 0.0, 0.0, 1.0], dtype=np.float64)
@@ -204,7 +206,28 @@ class MocapRosTeleop(Teleoperator):
         with self._lock:
             if self._finger_initial is None:
                 self._finger_initial = fingers.copy()
-            self._fingers = fingers
+                self._fingers = fingers.copy()
+                self._filtered_fingers = fingers.copy()
+            else:
+                previous = self._fingers
+                accepted = fingers.copy()
+                outliers = np.abs(accepted - previous) > self.config.finger_outlier_threshold
+                if np.any(outliers):
+                    # Reject only the channels that jumped; valid fingers in
+                    # the same packet are still accepted.
+                    accepted[outliers] = previous[outliers]
+                    now = time.monotonic()
+                    if now - self._last_finger_outlier_warning >= 1.0:
+                        logger.warning(
+                            "Rejected %d glove channel jump(s) above %.3f.",
+                            int(np.count_nonzero(outliers)),
+                            self.config.finger_outlier_threshold,
+                        )
+                        self._last_finger_outlier_warning = now
+                self._fingers = accepted
+                alpha = float(np.clip(self.config.finger_filter_alpha, 0.0, 1.0))
+                assert self._filtered_fingers is not None
+                self._filtered_fingers += alpha * (accepted - self._filtered_fingers)
             self._last_finger_time = time.monotonic()
 
     @check_if_not_connected
@@ -227,7 +250,7 @@ class MocapRosTeleop(Teleoperator):
             wrist_quat = None if not wrist_ready else self._wrist_quat.copy()
             wrist_initial_pos = None if not wrist_ready else self._wrist_initial_pos.copy()
             wrist_initial_quat = None if not wrist_ready else self._wrist_initial_quat.copy()
-            fingers = None if not fingers_ready else self._fingers.copy()
+            fingers = None if not fingers_ready else self._filtered_fingers.copy()
             finger_initial = None if not fingers_ready else self._finger_initial.copy()
 
         translation = np.zeros(3, dtype=np.float64)
@@ -276,8 +299,10 @@ class MocapRosTeleop(Teleoperator):
                     f"The legacy mapping produces {desired_hand.size} hand joints, but hand_joint_names has "
                     f"{self._commanded_hand.size}."
                 )
+            hand_error = desired_hand - self._commanded_hand
+            hand_error[np.abs(hand_error) < self.config.finger_deadband_rad] = 0.0
             hand_delta = np.clip(
-                desired_hand - self._commanded_hand,
+                hand_error,
                 -self.config.max_finger_delta_rad,
                 self.config.max_finger_delta_rad,
             )
@@ -308,6 +333,7 @@ class MocapRosTeleop(Teleoperator):
                 self._wrist_initial_quat = self._wrist_quat.copy()
             if self._fingers is not None:
                 self._finger_initial = self._fingers.copy()
+                self._filtered_fingers = self._fingers.copy()
         self._commanded_pos[:] = 0.0
         self._commanded_rot = np.asarray([0.0, 0.0, 0.0, 1.0], dtype=np.float64)
         self._commanded_hand[:] = 0.0

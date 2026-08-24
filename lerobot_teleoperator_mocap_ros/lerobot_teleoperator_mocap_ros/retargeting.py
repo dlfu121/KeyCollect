@@ -145,9 +145,9 @@ def map_glove_to_hand_offsets(
 ) -> np.ndarray:
     """Map a 57-value glove frame to the legacy 20-joint DexHand offset vector.
 
-    The legacy controller used ``initial - current`` so that glove flexion has
-    the same sign as the simulated DexHand joint limits.  The returned order is
-    finger 1..5, joint 1..4.
+    The glove flexion channels increase from their calibrated neutral values,
+    matching the positive closing direction of the DexHand joints.  The
+    returned order is finger 1..5, joint 1..4.
     """
 
     now = extract_glove_dofs(current_values)

@@ -33,7 +33,7 @@ class MuJoCoSimulation:
     - Named camera rendering
     """
 
-    def __init__(self, scene_path: str, physics_dt: float = 0.002):
+    def __init__(self, scene_path: str, physics_dt: float = 0.001):
         self.scene_path = Path(scene_path)
         self.physics_dt = physics_dt
         self._model: mujoco.MjModel | None = None
@@ -58,6 +58,7 @@ class MuJoCoSimulation:
                 self._model.opt.timestep,
                 self.physics_dt,
             )
+            self.physics_dt = float(self._model.opt.timestep)
 
         # Enumerate named cameras
         self._named_cameras = []

@@ -195,13 +195,6 @@
         <geom type="capsule" fromto="0.12 0 0 0.18 0 0" size="0.004" rgba="0.65 0.65 0.70 1"/>
       </body>
 
-      <!-- 螺丝刀2:蓝色,固定在桌面上 -->
-      <body name="screwdriver_blue" pos="0.15 -0.15 0.79" euler="0 0 0.8">
-        <!-- 手柄 -->
-        <geom type="capsule" fromto="0 0 0 0.12 0 0" size="0.012" rgba="0.15 0.35 0.85 1"/>
-        <!-- 金属杆 -->
-        <geom type="capsule" fromto="0.12 0 0 0.18 0 0" size="0.004" rgba="0.65 0.65 0.70 1"/>
-      </body>
     </body>
   </worldbody>
 </mujoco>

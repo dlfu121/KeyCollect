@@ -34,7 +34,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--physics-dt",
         type=float,
-        default=0.002,
+        default=0.001,
         help="Expected physics timestep in seconds.",
     )
     return parser.parse_args()

@@ -29,7 +29,7 @@ class MocapRosTeleopConfig(TeleoperatorConfig):
     rosbridge_host: str = "127.0.0.1"
     rosbridge_port: int = 9090
 
-    # Existing calibrated translation mapping: robot xyz <- mocap zxy.
+    # Calibrated translation mapping: robot xyz <- mocap zxy.
     position_axis_map: list[float] = field(
         default_factory=lambda: [0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
     )
@@ -41,12 +41,17 @@ class MocapRosTeleopConfig(TeleoperatorConfig):
     position_scale: float = 0.01
     orientation_scale: float = 1.0
     finger_scale: float = 1.0
+    # Suppress glove packet jitter without changing the calibrated mapping.
+    # alpha=0.45 adds roughly one control frame of smoothing at 30 Hz.
+    finger_filter_alpha: float = 0.45
+    finger_deadband_rad: float = 0.003
+    finger_outlier_threshold: float = 0.40
     pip_dip_coupling: float = 1.0
     finger_spread_coupling: list[float] = field(default_factory=lambda: [1.0, 1.0, 1.0])
 
     # Per-control-frame safety/rate limits.
-    max_translation_delta_m: float = 0.02
-    max_rotation_delta_rad: float = 0.10
+    max_translation_delta_m: float = 0.005
+    max_rotation_delta_rad: float = 0.04
     max_finger_delta_rad: float = 0.05
     stale_timeout_s: float = 0.25
     expected_joint_values: int = 57

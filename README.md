@@ -1,350 +1,353 @@
-# MuJoCo 3.11.0 x LeRobot 0.6.1 仿真数据采集系统
+# KeyCollect created by ZiyueDong，YixiangZhang 8/24/26
 
-基于 MuJoCo 物理引擎和 LeRobot 框架的机器人仿真遥操作与数据采集系统。
+基于 MuJoCo 3.11 和 LeRobot 0.6 的 RM65-6F + DexHand 仿真、动捕遥操作和数据采集工程。
 
-## 系统要求
+当前只保留动捕手套控制链路：机械臂使用 `rm65/rm65_ik.py` 的解析逆运动学，键盘/鼠标插件和旧 DLS 控制已移除。
 
-| 组件 | 版本 |
-|---|---|
-| OS | Ubuntu 24.04 |
-| Python | 3.12 |
-| MuJoCo | 3.11.0 |
-| LeRobot | 0.6.1 |
-| 显示器 | 需要可用桌面环境 |
+## 1. 安装
 
-## 零、在wsl安装Ubantu24.04
-
-在Powershell中输入
-
-```bash
-wsl --install -d Ubuntu-24.04
-```
-
-设置用户名和密码后会直接进入Ubantu24.04系统，退出wsl，并且重新进入。
-
-在Powershell中继续输入
-
-```bash
-wsl --set-default Ubuntu-24.04
-```
-
-设置Ubantu24.04为默认版本，之后再输入
-
-```bash
-wsl
-```
-
-进入Ubantu24.04
-
-## 一、安装系统依赖
-
-```bash
-sudo apt update
-sudo apt install -y \
-  python3.12-venv \
-  python3-pip \
-  libgl1-mesa-dev \
-  libglfw3 \
-  libglfw3-dev \
-  git
-```
-
-> `libglfw3` 和 `libglfw3-dev` 用于 MuJoCo 窗口渲染。
-
-## 二、进入 KeyCollect Python 环境
+要求 Ubuntu 24.04、Python 3.12、可用桌面环境（无窗口录制可使用 EGL）。
 
 ```bash
 cd /home/ee304/dongziyue/KeyCollect
 conda activate keycollect
-python --version
-```
-
-## 三、安装 Python 包
-
-```bash
-python -m pip install --upgrade pip
-python -m pip install matplotlib
-python -m pip install mujoco==3.11.0
-python -m pip install lerobot==0.6.1
-python -m pip install 'lerobot[dataset]==0.6.1'
-python -m pip install lerobot[viz]
+sudo apt install -y libgl1-mesa-dev libglfw3 libglfw3-dev
+python -m pip install -U pip
+python -m pip install mujoco==3.11.0 'lerobot[dataset,viz]==0.6.1'
 python -m pip install -e ./lerobot_robot_mujoco
 python -m pip install -e './lerobot_teleoperator_mocap_ros[rosbridge]'
 ```
 
-## 四、启动屏幕渲染
+## 2. 准备工作
+
+启动前需要另开三个终端，此项目终端只运行KeyCollect（可直接从四开始，前面三个配置基本不会动）（前三个配置在文末找）
+
+### 4. 四终端启动流程（可直接从此处开始，前面的配置基本不会动）
+
+四个终端必须按照下面的顺序启动。启动后的终端必须保持运行，不要关闭。
+
+#### 终端 1：roscore
+
+加载 ROS Noetic：
+
+```bash
+source /opt/ros/noetic/setup.bash
+```
+
+启动 ROS Master：
+
+```bash
+roscore
+```
+
+正常输出包括：
+
+```text
+started core service [/rosout]
+ROS_MASTER_URI=http://localhost:11311/
+```
+
+保持终端 1 运行。
+
+#### 终端 2：mocap_joint_publisher
+
+进入动捕 Catkin 工作空间：
+
+```bash
+cd "$HOME/dongziyue/mocap_joint_publisher"
+```
+
+加载 ROS Noetic：
+
+```bash
+source /opt/ros/noetic/setup.bash
+```
+
+加载动捕工作空间：
+
+```bash
+source "$HOME/dongziyue/mocap_joint_publisher/devel/setup.bash"
+```
+
+可选检查包是否可见：
+
+```bash
+rospack find mocapapi
+```
+
+正常输出：
+
+```text
+/home/ee304/dongziyue/mocap_joint_publisher/src/mocapapi
+```
+
+启动动捕节点：
+
+```bash
+rosrun mocapapi mocap_joint_publisher
+```
+
+注意：ROS 包名是 `mocapapi`，节点名才是 `mocap_joint_publisher`。不要使用 `roslaunch mocap_joint_publisher mocap_joint_publisher.launch`。
+
+正常现象：
+
+- 节点持续运行，没有 traceback 或自动退出。
+- Axis Studio 开始广播后，节点持续接收数据。
+- ROS 中出现 `/right_wrist_pose` 和 `/right_joint_poses`。
+- 两个话题的频率约为 50 Hz。
+
+保持终端 2 运行。
+
+#### 终端 3：ROSBridge
+
+加载 ROS Noetic：
+
+```bash
+source /opt/ros/noetic/setup.bash
+```
+
+启动 ROSBridge WebSocket：
+
+```bash
+roslaunch rosbridge_server rosbridge_websocket.launch
+```
+
+正常输出会说明 WebSocket 已在 `9090` 端口启动或监听。
+
+保持终端 3 运行。
+
+#### 终端 4：验证数据并启动 KeyCollect（本终端）
+
+先加载 ROS：
+
+```bash
+source /opt/ros/noetic/setup.bash
+```
+
+确认两个动捕话题存在：
+
+```bash
+rostopic list | grep -E '/right_wrist_pose|/right_joint_poses'
+```
+
+正常输出：
+
+```text
+/right_joint_poses
+/right_wrist_pose
+```
+
+检查手腕频率：(也可以不检查，基本没问题)
+
+```bash
+rostopic hz /right_wrist_pose
+```
+
+正常值约为 50 Hz。看到稳定频率后按 `Ctrl+C` 结束检查。
+
+检查手指频率：
+
+```bash
+rostopic hz /right_joint_poses
+```
+
+正常值约为 50 Hz。看到稳定频率后按 `Ctrl+C` 结束检查。
+
+检查一帧手指数据：
+
+```bash
+rostopic echo -n 1 /right_joint_poses
+```
+
+正常情况下会输出一条 `Float32MultiArray` 消息，其 `data` 包含 57 个数值。
+
+确认 ROSBridge 正在监听 9090：
+
+```bash
+ss -ltn | grep ':9090'
+```
+
+进入 KeyCollect：
+
+```bash
+cd "$HOME/dongziyue/KeyCollect"
+```
+
+初始化 Conda shell：
+
+```bash
+source "$HOME/miniforge3/etc/profile.d/conda.sh"
+```
+
+激活 KeyCollect 环境：
 
 ```bash
 conda activate keycollect
-export MUJOCO_GL=glfw
-python3 scripts/viewer.py
 ```
 
-默认遥操作使用带 26 个位置伺服器的 `assets/scenes/rm65_dexhand_scene.xml`。URDF 是场景生成的中间产物，不应直接用于遥操作。单独查看场景时可以指定 MJCF 文件：
+确认环境：
 
 ```bash
-python3 scripts/viewer.py assets/scenes/rm65_dexhand_scene.xml
+echo "$CONDA_DEFAULT_ENV"
 ```
 
-也可以指定自己的场景文件：
-
-```bash
-python3 scripts/viewer.py assets/scene/your_scene.xml
-```
-
-如果你已经在桌面环境里运行，一般不需要再额外设置 `DISPLAY`。
-
-## 五、动捕手套遥操作
-
-直接启动：
-
-```bash
-conda activate keycollect
-export MUJOCO_GL=glfw
-python3 scripts/teleop.py
-```
-
-该入口只订阅 `/right_wrist_pose` 和 `/right_joint_poses`，不会注册键盘或鼠标控制。
-启动时保持右手自然中立，收到的第一帧会作为自动零点。
-
-当前默认硬件是：
+正常输出：
 
 ```text
-机械臂：assets/arm/RM65-6F.urdf
-灵巧手：assets/hand/dexhand021_right_simplified.urdf
-组合场景：assets/scenes/rm65_dexhand_scene.xml
+keycollect
 ```
 
-## 六、更换硬件
-
-当前项目支持把机械臂和末端手爪分别放在 `assets/arm/` 和 `assets/hand/`，再生成一个 MuJoCo 可加载的组合场景。
-
-### 6.1 当前目录约定
-
-```text
-assets/
-├── arm/
-│   ├── RM65-6F.urdf
-│   ├── base_link.STL
-│   ├── link_1.STL
-│   └── ...
-├── hand/
-│   ├── dexhand021_right_simplified.urdf
-│   ├── right_hand_base.STL
-│   ├── r_f_link1_1.STL
-│   └── ...
-└── scene/
-    ├── demo_scene.xml
-    └── rm65_dexhand_scene.urdf
-```
-
-### 6.2 重新生成组合硬件场景
-
-如果替换了机械臂或手，运行：
+可选检查场景执行器数量：
 
 ```bash
-python3 scripts/build_hardware_scene.py
+python -c "import mujoco; m=mujoco.MjModel.from_xml_path('assets/scenes/rm65_dexhand_scene.xml'); print('actuators =', m.nu)"
 ```
 
-默认会读取：
+正常输出：
+
+```text
+actuators = 26
+```
+> ok到这里就开完了所有的终端，可以开始调试啦:)
+
+
+## 3. 常用命令
+
+```bash
+# 查看场景
+export MUJOCO_GL=glfw
+python scripts/viewer.py assets/scenes/rm65_dexhand_scene.xml
+
+# 检查依赖和场景
+python scripts/doctor.py
+
+# 启动动捕遥操作（默认订阅 ROS 话题）
+python scripts/teleop.py --transport auto
+```
+
+动捕节点应发布 `/right_wrist_pose`（`geometry_msgs/PoseStamped`）和 `/right_joint_poses`（`std_msgs/Float32MultiArray`，57 维）。
+
+
+启动遥操作时保持右手自然中立，第一帧会自动作为零点；消息超过超时时间会输出安全零增量。
+
+
+## 4. 配置
+
+- `config/robot.yaml`：场景路径、机械臂和 DexHand 关节名、末端 body。
+- `config/simulation.yaml`：MuJoCo 时间步长、渲染和安全参数。
+- `config/mocap_teleop.yaml`：ROS 话题、传输方式、位置/姿态/手指缩放、超时。
+
+默认模型：
 
 ```text
 assets/arm/RM65-6F.urdf
 assets/hand/dexhand021_right_simplified.urdf
-```
-
-并生成：
-
-```text
 assets/scenes/rm65_dexhand_scene.xml
 ```
 
-也可以手动指定文件：
+替换模型后生成组合场景：
 
 ```bash
-python3 scripts/build_hardware_scene.py \
+python scripts/build_hardware_scene.py \
   --arm assets/arm/your_arm.urdf \
   --hand assets/hand/your_hand.urdf \
-  --arm-mount-link link_6 \
-  --hand-root-link right_hand_base \
-  --hand-mount-xyz 0 0 -0.08 \
-  --hand-mount-rpy 0 0 0 \
-  --output assets/scene/your_hardware_scene.urdf
+  --output assets/scenes/your_scene.xml
 ```
 
-参数说明：
+然后同步修改 `config/robot.yaml` 中的关节名和场景路径。`scripts/teleop.py` 固定使用解析 RM65 IK，不再提供 `--ik-solver` 参数。
 
-| 参数 | 说明 |
-|---|---|
-| `--arm` | 机械臂 URDF 路径 |
-| `--hand` | 手或夹爪 URDF 路径 |
-| `--arm-mount-link` | 手要挂到机械臂哪个 link 上 |
-| `--hand-root-link` | 手模型的根 link |
-| `--hand-mount-xyz` | 手相对机械臂末端的安装偏移，单位米 |
-| `--hand-mount-rpy` | 手相对机械臂末端的安装姿态，单位弧度 |
-| `--output` | 生成的组合场景路径 |
 
-如果手和机械臂没有贴紧，优先调 `--hand-mount-xyz`。例如手离机械臂太远，可以继续减小 z 偏移：
+## 5. 数据采集
+
+先确认无录制遥操作正常，再运行项目的 MuJoCo 录制入口。该入口复用
+`lerobot-record` 的数据集和视频编码逻辑，并增加逐 episode 的快捷键与自动 reset：
+
+- `q`、`n` 或右方向键：结束并保存当前 episode，随后 reset 场景；
+- `r` 或左方向键：丢弃当前 episode，reset 后重新录制；
+- `Esc`：保存当前 episode、reset 场景并结束整个录制任务；
+- 达到 `episode_time_s` 时也会自动保存并 reset；
+- 每次 reset 都恢复 XML 的 `home` keyframe，然后重新随机排布红、蓝螺丝刀。
 
 ```bash
-python3 scripts/build_hardware_scene.py --hand-mount-xyz 0 0 -0.12
-```
-
-### 6.3 更新遥操作配置
-
-生成新场景后，检查并更新 `config/robot.yaml`：
-
-```yaml
-scene_path: assets/scenes/rm65_dexhand_scene.xml
-
-arm_joint_names:
-  - joint_1
-  - joint_2
-  - joint_3
-  - joint_4
-  - joint_5
-  - joint_6
-
-gripper_joint_names:
-  - r_f_joint1_1
-  - r_f_joint1_2
-  - r_f_joint2_1
-  - r_f_joint2_2
-```
-
-`scripts/teleop.py` 当前默认也使用这套 RM65 + 右手命名。如果换了新的硬件，需要同步改脚本里的：
-
-```text
-arm_joints
-gripper_joints
---ee-body
-```
-
-### 6.4 验证新硬件是否可加载
-
-```bash
-python3 - <<'PY'
-import mujoco
-m = mujoco.MjModel.from_xml_path("assets/scenes/rm65_dexhand_scene.xml")
-print("joints", m.njnt, "geoms", m.ngeom, "cameras", m.ncam)
-PY
-```
-
-如果能正常输出关节和几何数量，就说明 MuJoCo 可以加载该硬件场景。
-### 七、摄像头组件
-修改摄像头位置：`python tune_camera.py`
-### 八、数据采集命令
-```bash
-conda activate keycollect
-
-MUJOCO_GL=egl
-
-lerobot-record \
+export MUJOCO_GL=egl
+python scripts/record_mujoco.py \
   --robot.type=mujoco \
   --robot.id=rm65_dexhand \
-  --robot.calibration_dir=.cache/lerobot/calibration/robots/mujoco \
   --robot.scene_path=assets/scenes/rm65_dexhand_scene.xml \
+  --robot.ee_site_name=link_6 \
   --robot.arm_joint_names='["joint_1","joint_2","joint_3","joint_4","joint_5","joint_6"]' \
   --robot.gripper_joint_names='["r_f_joint1_1","r_f_joint1_2","r_f_joint1_3","r_f_joint1_4","r_f_joint2_1","r_f_joint2_2","r_f_joint2_3","r_f_joint2_4","r_f_joint3_1","r_f_joint3_2","r_f_joint3_3","r_f_joint3_4","r_f_joint4_1","r_f_joint4_2","r_f_joint4_3","r_f_joint4_4","r_f_joint5_1","r_f_joint5_2","r_f_joint5_3","r_f_joint5_4"]' \
-  --robot.ee_site_name=link_6 \
-  --robot.cameras='{"table_camera":{"type":"opencv","index_or_path":0,"width":640,"height":480,"fps":30},"wrist_overhead_camera":{"type":"opencv","index_or_path":1,"width":640,"height":480,"fps":30}}' \
+  --robot.cameras='{"table_camera":{"type":"opencv","index_or_path":0,"width":640,"height":480,"fps":30},"wrist_overhead_camera":{"type":"opencv","index_or_path":0,"width":640,"height":480,"fps":30}}' \
   --teleop.type=mocap_ros \
   --teleop.transport=auto \
-  --teleop.position_scale=0.01 \
-  --teleop.stale_timeout_s=0.25 \
-  --dataset.repo_id=dlfu121/Industrial \
-  --dataset.single_task="这里填上具体任务命令" \
-  --dataset.root=data/rm65_dexhand_test \
+  --dataset.repo_id=local/rm65_dexhand \
+  --dataset.single_task="Use the RM65 DexHand to grasp a screwdriver" \
+  --dataset.root=data/rm65_dexhand \
+  --dataset.fps=30 \
   --dataset.num_episodes=5 \
   --dataset.episode_time_s=30 \
-  --dataset.reset_time_s=10 \
-  --dataset.push_to_hub=false \
-  --display_data=true \
-  --play_sounds=false
-```
-采集后，上传数据：
-```bash
-hf auth login
-```
-可以用我的accesstoken，会发在群里，然后上传远程仓库：
-```bash
-hf upload dlfu121/Industrial1 . --repo-type=dataset
+  --dataset.reset_time_s=0 \
+  --dataset.push_to_hub=false
 ```
 
-## 九、动捕手套 ROS1 遥操作
+建议每次采集使用新的 `data/<dataset_name>/` 目录。上传 Hugging Face 前先执行 `hf auth login`。
 
-`first_version/mocap_joint_publisher` 保持不变。KeyCollect 新增的
-`mocap_ros` LeRobot 遥操作插件直接消费它发布的：
 
-- `/right_wrist_pose` (`geometry_msgs/PoseStamped`)
-- `/right_joint_poses` (`std_msgs/Float32MultiArray`, 57 维)
+## 6. 工程结构
 
-映射沿用旧 `mujoco_push_t-main` 的第一帧自动归零、位置 `z/x/y`
-轴重排、`0.01` 位置缩放、右手姿态相似变换，以及 57 维手套到
-DexHand 20 关节的索引和 PIP-DIP 耦合。消息超过 0.25 秒未更新时，
-插件自动输出零增量。
-
-### 9.1 使用 rosbridge（当前 Python 3.12 环境）
-
-ROS Noetic 终端启动动捕节点和 rosbridge：
-
-```bash
-source /opt/ros/noetic/setup.bash
-source first_version/mocap_joint_publisher/devel/setup.bash
-roslaunch rosbridge_server rosbridge_websocket.launch
+```text
+assets/                         # 模型、网格和场景
+config/                         # 运行配置
+lerobot_robot_mujoco/           # MuJoCo 仿真和运动学辅助
+lerobot_teleoperator_mocap_ros/ # 动捕遥操作插件及测试
+rm65/                           # RM65 当前解析 FK/IK
+processors/                     # 末端控制和数据处理
+scripts/                        # viewer、teleop、场景生成和诊断
+data/                           # 数据集输出和 smoke-test 数据
 ```
 
-KeyCollect 终端使用独立的 Python 3.12 环境：
 
-```bash
-conda activate keycollect
-python -m pip install -e './lerobot_teleoperator_mocap_ros[rosbridge]'
-```
+## 7. 测试（第2部分的前三项）
 
-启动原动捕节点后，先确认话题正常：
+本文档用于 Linux 主机关机或重启后，重新启动 Axis Studio → ROS1 → ROSBridge → KeyCollect MuJoCo 动捕遥操作系统。
 
-```bash
-rostopic hz /right_wrist_pose
-rostopic echo -n 1 /right_joint_poses
-```
+### 1. 固定环境
 
-### 9.2 transport 选择
+- Linux 用户：`ee304`
+- KeyCollect：`$HOME/dongziyue/KeyCollect`
+- Conda 环境：`keycollect`
+- ROS：ROS1 Noetic
+- 动捕 Catkin 工作空间：`$HOME/dongziyue/mocap_joint_publisher`
+- ROS 包名：`mocapapi`
+- 动捕节点名：`mocap_joint_publisher`
+- Windows 动捕上位机：`192.170.10.10`
+- Linux 有线网卡：`enp3s0`
+- Linux 有线地址：`192.170.10.8`
+- Axis Studio UDP 目标：`192.170.10.8:7077`
+- ROSBridge WebSocket：`127.0.0.1:9090`
+- 手腕话题：`/right_wrist_pose`
+- 手指话题：`/right_joint_poses`，57 维
+- 正常发布频率：约 50 Hz
+- MuJoCo 场景：`assets/scenes/rm65_dexhand_scene.xml`
+- 场景执行器数量：26
+- 稳定参数：`kp=100`、`kv=10`
 
-ROS Noetic 与 KeyCollect Python 3.12 分属不同环境，默认 `transport=auto`
-会在 `rospy` 不可用时连接本机 `127.0.0.1:9090` 的 rosbridge，
-不需要修改 `mocap_joint_publisher`。也可以显式指定：
+> 启动 KeyCollect 的瞬间，手腕和所有手指必须保持自然中立姿态。动捕遥操作器会把收到的第一帧作为零点。
 
-```bash
-python scripts/teleop.py --transport=rosbridge
-```
+### 2. Axis Studio 设置
 
-### 9.3 先做不录制的遥操作检查
+在 Windows 上打开 Axis Studio，确认广播参数：
 
-下面命令中的机器人参数与第八节一致，仅将遥操作器换成动捕手套：
+- 协议：UDP
+- 格式：二进制
+- 帧头：新帧头
+- 旋转顺序：YXZ
+- 位移：开启
+正常情况下会很快出现来自 `192.170.10.10`、发往 `192.170.10.8.7077` 的 UDP 数据包。确认后进入四终端启动流程。
+
 
 ```bash
-MUJOCO_GL=glfw lerobot-teleoperate \
-  --robot.type=mujoco \
-  --robot.id=rm65_dexhand \
-  --robot.scene_path=assets/scenes/rm65_dexhand_scene.xml \
-  --robot.arm_joint_names='["joint_1","joint_2","joint_3","joint_4","joint_5","joint_6"]' \
-  --robot.gripper_joint_names='["r_f_joint1_1","r_f_joint1_2","r_f_joint1_3","r_f_joint1_4","r_f_joint2_1","r_f_joint2_2","r_f_joint2_3","r_f_joint2_4","r_f_joint3_1","r_f_joint3_2","r_f_joint3_3","r_f_joint3_4","r_f_joint4_1","r_f_joint4_2","r_f_joint4_3","r_f_joint4_4","r_f_joint5_1","r_f_joint5_2","r_f_joint5_3","r_f_joint5_4"]' \
-  --robot.ee_site_name=link_6 \
-  --teleop.type=mocap_ros \
-  --teleop.transport=auto \
-  --teleop.position_scale=0.01 \
-  --teleop.stale_timeout_s=0.25 \
-  --fps=30
+python -m pytest -q lerobot_teleoperator_mocap_ros/tests rm65/test_rm65_ik.py
 ```
 
-启动时保持手腕和手指处于自然中立姿态，第一帧会成为零点。确认轴向、
-幅度和手指方向正确后即可用第八节命令采集；
-逐个 DexHand 关节的控制增量会写入数据集 action，而不仅是记录一个总开合量。
-
-常用参数位于 `config/mocap_teleop.yaml`：
-
-- `position_scale`：手腕平移比例，默认沿用旧系统的 `0.01`
-- `orientation_scale`：手腕旋转比例
-- `finger_scale`：手指弯曲比例
-- `max_*_delta_*`：单控制周期最大变化量
-- `transport`：`auto`、`rospy` 或 `rosbridge`
+测试覆盖 RM65 运动学、重定向、场景接口和插件发现，不会自动启动真实 ROS 节点。

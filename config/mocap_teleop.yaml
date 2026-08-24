@@ -5,7 +5,7 @@ wrist_topic: /right_wrist_pose
 joint_topic: /right_joint_poses
 transport: auto
 
-# Calibrated mocap-to-RM65 wrist mapping: X/Y/Z -> -Z/-X/+Y.
+# Translation: robot XYZ <- mocap Z, X, Y.
 position_axis_map: [0, 0, 1, 1, 0, 0, 0, 1, 0]
 orientation_axis_map: [0, -1, 0, 0, 0, 1, -1, 0, 0]
 position_scale: 0.01

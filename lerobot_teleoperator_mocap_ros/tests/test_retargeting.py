@@ -17,7 +17,7 @@ from retargeting import (  # noqa: E402
 
 
 class RetargetingTest(unittest.TestCase):
-    def test_legacy_position_axis_mapping(self) -> None:
+    def test_rm65_position_axis_mapping(self) -> None:
         mapped = map_wrist_position(
             [2.0, 3.0, 4.0],
             [1.0, 1.0, 1.0],
@@ -71,7 +71,7 @@ class RetargetingTest(unittest.TestCase):
         initial = np.zeros(57)
         current = np.zeros(57)
         for index in (1, 5, 8, 14, 17, 20, 26, 29, 32, 38, 41, 44, 50, 53, 56):
-            current[index] = -index / 100.0
+            current[index] = index / 100.0
         mapped = map_glove_to_hand_offsets(current, initial, pip_dip_coupling=0.5)
         self.assertEqual(mapped.shape, (20,))
         np.testing.assert_allclose(

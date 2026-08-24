@@ -26,6 +26,10 @@ from .safety import clip_joint_step, check_nan_inf, unwrap_revolute_targets
 
 logger = logging.getLogger(__name__)
 
+RM65_BASE_HEIGHT_M = 0.2405
+RM65_THEORETICAL_FLANGE_RADIUS_M = 0.256 + 0.210 + 0.1725
+RM65_TASK_RADIUS_M = RM65_THEORETICAL_FLANGE_RADIUS_M - 0.05
+
 def _has_delta_motion(action: dict[str, Any]) -> bool:
     motion_keys = (
         "delta_x",
@@ -78,7 +82,7 @@ class MuJoCoRobot(Robot):
         self._ee_site = config.ee_site_name
         self._ee_frame_type = "site"
         self._rng = np.random.default_rng()
-        self._screwdriver_bodies = ("screwdriver_red", "screwdriver_blue")
+        self._screwdriver_body = "screwdriver_red"
         self._cartesian_target: CartesianPoseTarget | None = None
 
     @property
@@ -375,32 +379,90 @@ class MuJoCoRobot(Robot):
         if not getattr(self.config, "randomize_screwdrivers", False):
             return
 
-        x_bounds = tuple(getattr(self.config, "screwdriver_workspace_x", (-0.32, 0.20)))
-        y_bounds = tuple(getattr(self.config, "screwdriver_workspace_y", (-0.28, 0.28)))
-        min_sep = float(getattr(self.config, "screwdriver_min_separation_m", 0.12))
+        x_bounds = tuple(getattr(self.config, "screwdriver_workspace_x", (-0.22, 0.02)))
+        y_bounds = tuple(getattr(self.config, "screwdriver_workspace_y", (-0.22, 0.04)))
+        front_offsets = tuple(
+            getattr(self.config, "screwdriver_palm_front_offsets", (0.04, 0.22))
+        )
+        right_offsets = tuple(
+            getattr(self.config, "screwdriver_palm_right_offsets", (0.04, 0.20))
+        )
+        angle_bounds_deg = tuple(
+            getattr(self.config, "screwdriver_y_axis_angle_deg", (-35.0, 35.0))
+        )
+        palm_site = mujoco.mj_name2id(
+            self._sim.model, mujoco.mjtObj.mjOBJ_SITE, "dexhand_palm_center"
+        )
+        if palm_site < 0:
+            logger.warning("Could not find DexHand palm site; screwdriver position was not randomized.")
+            return
+        palm_xy = self._sim.data.site_xpos[palm_site, :2].copy()
+        palm_rotation = self._sim.data.site_xmat[palm_site].reshape(3, 3)
+        front_xy = palm_rotation[:2, 2].copy()
+        right_xy = -palm_rotation[:2, 1].copy()
+        front_norm = np.linalg.norm(front_xy)
+        right_norm = np.linalg.norm(right_xy)
+        if front_norm < 1e-6 or right_norm < 1e-6:
+            logger.warning("Could not project the DexHand palm's front/right axes onto the table.")
+            return
+        front_xy /= front_norm
+        right_xy /= right_norm
 
-        candidates: dict[str, np.ndarray] = {}
-        for body_name in self._screwdriver_bodies:
-            try:
-                base = self._sim.get_body_pose(body_name)[:3].copy()
-            except ValueError:
-                logger.warning("Could not find screwdriver body in scene: %s", body_name)
-                continue
-            for _ in range(32):
-                candidate = base.copy()
-                candidate[0] = self._rng.uniform(*x_bounds)
-                candidate[1] = self._rng.uniform(*y_bounds)
-                if all(np.linalg.norm(candidate[:2] - prev[:2]) >= min_sep for prev in candidates.values()):
-                    candidates[body_name] = candidate
-                    break
-            else:
-                candidates[body_name] = base
+        link1_id = mujoco.mj_name2id(
+            self._sim.model, mujoco.mjtObj.mjOBJ_BODY, "link_1"
+        )
+        if link1_id < 0:
+            logger.warning("Could not find RM65 link_1; screwdriver position was not randomized.")
+            return
+        base_position = self._sim.data.xpos[link1_id].copy()
+        base_position[2] -= RM65_BASE_HEIGHT_M
+        try:
+            body_id = self._sim.get_body_id(self._screwdriver_body)
+        except ValueError:
+            logger.warning("Could not find screwdriver body: %s", self._screwdriver_body)
+            return
+        handle_height = self._sim.data.xpos[body_id, 2]
 
-        for body_name, pos in candidates.items():
-            try:
-                self._sim.set_body_position(body_name, pos)
-            except ValueError:
-                logger.warning("Could not randomize screwdriver body: %s", body_name)
+        handle_center: np.ndarray | None = None
+        for _ in range(4096):
+            candidate = (
+                palm_xy
+                + self._rng.uniform(*front_offsets) * front_xy
+                + self._rng.uniform(*right_offsets) * right_xy
+            )
+            inside_workspace = (
+                x_bounds[0] <= candidate[0] <= x_bounds[1]
+                and y_bounds[0] <= candidate[1] <= y_bounds[1]
+            )
+            inside_flange_radius = (
+                np.linalg.norm(
+                    np.array([candidate[0], candidate[1], handle_height]) - base_position
+                )
+                <= RM65_TASK_RADIUS_M
+            )
+            if inside_workspace and inside_flange_radius:
+                handle_center = candidate
+                break
+        if handle_center is None:
+            logger.warning(
+                "Could not place the screwdriver within the RM65 task radius %.4f m.",
+                RM65_TASK_RADIUS_M,
+            )
+            return
+
+        body_name = self._screwdriver_body
+        qpos_addr = self._sim.get_body_qpos_addr(body_name)
+        angle_from_y = np.deg2rad(self._rng.uniform(*angle_bounds_deg))
+        yaw = 0.5 * np.pi + angle_from_y
+        self._sim.data.qpos[qpos_addr + 3 : qpos_addr + 7] = (
+            np.cos(0.5 * yaw), 0.0, 0.0, np.sin(0.5 * yaw)
+        )
+        self._sim.forward()
+        rotation = self._sim.data.xmat[body_id].reshape(3, 3)
+        handle_offset = rotation @ np.array([-0.04, 0.0, 0.0])
+        base = self._sim.get_body_pose(body_name)[:3].copy()
+        base[:2] = handle_center - handle_offset[:2]
+        self._sim.set_body_position(body_name, base)
         self._sim.forward()
 
     def get_simulation_time(self) -> float:
