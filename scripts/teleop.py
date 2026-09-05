@@ -37,13 +37,38 @@ DEFAULT_STATE_PATH = ROOT / "assets" / "scenes" / "current_state.npz"
 RM65_BASE_HEIGHT_M = 0.2405
 RM65_FLANGE_LINK_LENGTHS_M = (0.256, 0.210, 0.1725)
 RM65_THEORETICAL_FLANGE_RADIUS_M = sum(RM65_FLANGE_LINK_LENGTHS_M)
-# Keep task objects away from the fully extended singular posture and leave
-# room for the requested flange orientation.
-RM65_TASK_RADIUS_MARGIN_M = 0.05
-RM65_TASK_RADIUS_M = RM65_THEORETICAL_FLANGE_RADIUS_M - RM65_TASK_RADIUS_MARGIN_M
+# The screwdriver handle mesh extends 82.656 mm from its center.  Keep a
+# rounded 83 mm envelope plus 5 mm numerical/modeling margin inside the flange
+# reach so the complete handle stays inside the theoretical radius.
+RM65_HANDLE_ENVELOPE_RADIUS_M = 0.083
+RM65_HANDLE_MARGIN_M = 0.005
+RM65_TASK_RADIUS_M = (
+    RM65_THEORETICAL_FLANGE_RADIUS_M
+    - RM65_HANDLE_ENVELOPE_RADIUS_M
+    - RM65_HANDLE_MARGIN_M
+)
+# Keep an additional small margin for Cartesian target commands and clamp
+# targets instead of freezing the arm when a lateral mocap delta crosses the
+# boundary.
+RM65_SAFE_REACH_RADIUS_M = RM65_TASK_RADIUS_M - 0.01
 SCREWDRIVER_PALM_FRONT_OFFSETS = (0.04, 0.22)
-SCREWDRIVER_PALM_RIGHT_OFFSETS = (0.04, 0.20)
+SCREWDRIVER_PALM_RIGHT_OFFSETS = (-0.20, 0.20)
 SCREWDRIVER_Y_AXIS_ANGLE_DEG = (-35.0, 35.0)
+
+# Standalone teleop control calibration. Keep these values local to this entry
+# point so changes made for lerobot-record cannot alter teleop.py implicitly
+# through MocapRosTeleopConfig defaults or recording YAML files.
+TELEOP_POSITION_AXIS_MAP = [0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+TELEOP_ORIENTATION_AXIS_MAP = [0.0, -1.0, 0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0]
+TELEOP_FINGER_FILTER_ALPHA = 0.45
+TELEOP_FINGER_DEADBAND_RAD = 0.003
+TELEOP_FINGER_OUTLIER_THRESHOLD = 0.40
+TELEOP_PIP_DIP_COUPLING = 1.0
+TELEOP_FINGER_SPREAD_COUPLING = [1.0, 1.0, 1.0]
+TELEOP_MAX_TRANSLATION_DELTA_M = 0.005
+TELEOP_MAX_ROTATION_DELTA_RAD = 0.04
+TELEOP_MAX_FINGER_DELTA_RAD = 0.05
+TELEOP_EXPECTED_JOINT_VALUES = 57
 
 
 def has_motion(action: dict[str, object]) -> bool:
@@ -88,7 +113,7 @@ def randomize_screwdrivers(
     x_bounds: tuple[float, float],
     y_bounds: tuple[float, float],
 ) -> dict[str, np.ndarray]:
-    """Randomize both handles mainly in the palm's right-front region."""
+    """Randomize the screwdriver across the palm's left/right front region."""
     palm_site = mujoco.mj_name2id(sim.model, mujoco.mjtObj.mjOBJ_SITE, "dexhand_palm_center")
     if palm_site < 0:
         raise ValueError("Scene does not contain the 'dexhand_palm_center' site.")
@@ -131,7 +156,7 @@ def randomize_screwdrivers(
             break
     if handle_center is None:
         raise RuntimeError(
-            "Could not place the screwdriver on the palm's right side within "
+            "Could not place the screwdriver across the palm's front region within "
             f"the RM65 task radius ({RM65_TASK_RADIUS_M:.4f} m)."
         )
 
@@ -186,19 +211,44 @@ def analytic_action_to_joint_targets(
     world_from_base = np.eye(4)
     world_from_base[:3, :3] = base_rotation
     world_from_base[:3, 3] = base_position
+    target_offset = pose_target.position_world - base_position
+    target_distance = float(np.linalg.norm(target_offset))
+    if target_distance > RM65_SAFE_REACH_RADIUS_M:
+        pose_target.position_world[:] = base_position + target_offset * (
+            RM65_SAFE_REACH_RADIUS_M / target_distance
+        )
+        logger.debug(
+            "Clamped Cartesian target to RM65 reach radius %.3f m (requested %.3f m).",
+            RM65_SAFE_REACH_RADIUS_M,
+            target_distance,
+        )
     target_world = pose_matrix(pose_target.position_world, pose_target.rotation_world)
     target_base = np.linalg.inv(world_from_base) @ target_world
     current_q = sim.get_joint_positions(arm_joints)
     try:
         solution = selector.solve(target_base, initial_seed=current_q)
     except Exception as exc:
-        # Keep the Cartesian command at the last reachable pose.  Otherwise
-        # rejected mocap deltas accumulate beyond the workspace boundary and
-        # the operator must move a long way back before control resumes.
-        pose_target.position_world[:] = previous_position
-        pose_target.rotation_world[:] = previous_rotation
-        logger.warning("Analytic RM65 IK failed; holding the current arm target: %s", exc)
-        return None
+        # A noisy/mismatched wrist orientation can make an otherwise reachable
+        # lateral position fail the full 6D IK. Retry at the current physical
+        # wrist orientation so translation remains controllable.
+        wrist_id = mujoco.mj_name2id(sim.model, mujoco.mjtObj.mjOBJ_BODY, "link_6")
+        if wrist_id >= 0:
+            current_rotation = sim.data.xmat[wrist_id].reshape(3, 3).copy()
+            relaxed_world = pose_matrix(pose_target.position_world, current_rotation)
+            try:
+                solution = selector.solve(np.linalg.inv(world_from_base) @ relaxed_world, initial_seed=current_q)
+                pose_target.rotation_world[:] = current_rotation
+                logger.debug("Relaxed unreachable wrist orientation to preserve Cartesian translation: %s", exc)
+            except Exception:
+                pose_target.position_world[:] = previous_position
+                pose_target.rotation_world[:] = previous_rotation
+                logger.warning("Analytic RM65 IK failed; holding the current arm target: %s", exc)
+                return None
+        else:
+            pose_target.position_world[:] = previous_position
+            pose_target.rotation_world[:] = previous_rotation
+            logger.warning("Analytic RM65 IK failed; holding the current arm target: %s", exc)
+            return None
     return sim.clip_to_joint_limits(arm_joints, solution.joints)
 
 
@@ -390,7 +440,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--control-fps",
         type=int,
-        default=30,
+        default=24,
         help="Teleop control frequency.",
     )
     parser.add_argument(
@@ -405,7 +455,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--wrist-topic", default="/right_wrist_pose", help="ROS1 wrist PoseStamped topic.")
     parser.add_argument("--joint-topic", default="/right_joint_poses", help="ROS1 glove Float32MultiArray topic.")
     parser.add_argument("--position-scale", type=float, default=0.01, help="Scale from mocap position units to meters.")
-    parser.add_argument("--orientation-scale", type=float, default=1.0, help="Wrist orientation gain.")
+    parser.add_argument("--orientation-scale", type=float, default=0.4, help="Wrist orientation gain.")
     parser.add_argument("--finger-scale", type=float, default=1.0, help="Finger retargeting gain.")
     parser.add_argument("--stale-timeout", type=float, default=0.25, help="Seconds before stale mocap input is held.")
     parser.add_argument(
@@ -415,11 +465,36 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Keep the authored screwdriver pose instead of randomizing it.",
     )
-    parser.add_argument("--screwdriver-x-range", nargs=2, type=float, default=(-0.22, 0.02), metavar=("MIN", "MAX"))
-    parser.add_argument("--screwdriver-y-range", nargs=2, type=float, default=(-0.22, 0.04), metavar=("MIN", "MAX"))
+    parser.add_argument("--screwdriver-x-range", nargs=2, type=float, default=(-0.18, -0.03), metavar=("MIN", "MAX"))
+    parser.add_argument("--screwdriver-y-range", nargs=2, type=float, default=(-0.15, 0.15), metavar=("MIN", "MAX"))
     parser.add_argument("--random-seed", type=int, default=None, help="Optional reproducible object-randomization seed.")
     parser.add_argument("--state-out", type=Path, default=DEFAULT_STATE_PATH, help="Path to save the latest qpos/qvel state for tune_camera.py.")
     return parser.parse_args()
+
+
+def build_teleop_config(args: argparse.Namespace) -> MocapRosTeleopConfig:
+    """Build standalone control settings without recording-config defaults."""
+    return MocapRosTeleopConfig(
+        wrist_topic=args.wrist_topic,
+        joint_topic=args.joint_topic,
+        transport=args.transport,
+        position_axis_map=list(TELEOP_POSITION_AXIS_MAP),
+        orientation_axis_map=list(TELEOP_ORIENTATION_AXIS_MAP),
+        position_scale=args.position_scale,
+        orientation_scale=args.orientation_scale,
+        finger_scale=args.finger_scale,
+        finger_filter_alpha=TELEOP_FINGER_FILTER_ALPHA,
+        finger_deadband_rad=TELEOP_FINGER_DEADBAND_RAD,
+        finger_outlier_threshold=TELEOP_FINGER_OUTLIER_THRESHOLD,
+        pip_dip_coupling=TELEOP_PIP_DIP_COUPLING,
+        finger_spread_coupling=list(TELEOP_FINGER_SPREAD_COUPLING),
+        max_translation_delta_m=TELEOP_MAX_TRANSLATION_DELTA_M,
+        max_rotation_delta_rad=TELEOP_MAX_ROTATION_DELTA_RAD,
+        max_finger_delta_rad=TELEOP_MAX_FINGER_DELTA_RAD,
+        stale_timeout_s=args.stale_timeout,
+        expected_joint_values=TELEOP_EXPECTED_JOINT_VALUES,
+        hand_joint_names=list(RIGHT_HAND_JOINTS),
+    )
 
 
 def main() -> int:
@@ -460,15 +535,7 @@ def main() -> int:
             sim.close()
         return 0
 
-    teleop_config = MocapRosTeleopConfig(
-        wrist_topic=args.wrist_topic,
-        joint_topic=args.joint_topic,
-        transport=args.transport,
-        position_scale=args.position_scale,
-        orientation_scale=args.orientation_scale,
-        finger_scale=args.finger_scale,
-        stale_timeout_s=args.stale_timeout,
-    )
+    teleop_config = build_teleop_config(args)
     teleop = MocapRosTeleop(teleop_config)
     teleop.connect()
     sim.launch_viewer()

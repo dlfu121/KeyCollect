@@ -36,27 +36,42 @@ gripper_joint_names:
   - r_f_joint5_3
   - r_f_joint5_4
 
-ee_site_name: ee_site
+ee_site_name: link_6
 
 cameras:
-  camera_front:
+  table_camera:
     type: opencv
-    index_or_path: 0  # placeholder
-    width: 480
+    # MuJoCoRobot renders the scene camera with this dictionary's dimensions;
+    # index_or_path is required by LeRobot's CameraConfig but is not opened.
+    index_or_path: 0
+    width: 640
     height: 480
-    fps: 30
+    fps: 24
+  wrist_overhead_camera:
+    type: opencv
+    index_or_path: 0
+    width: 640
+    height: 480
+    fps: 24
 
 # Simulation
 physics_dt: 0.001
-control_fps: 30
+control_fps: 24
+show_viewer: false
+show_camera_panel: true
+show_mapping_markers: false
 
-# Randomize the screwdriver in the palm's right-front region.
+# Randomize the screwdriver in the small workspace shared with recording.
 randomize_screwdrivers: true
-screwdriver_workspace_x: [-0.22, 0.02]
-screwdriver_workspace_y: [-0.22, 0.04]
+screwdriver_use_arc: false
+screwdriver_workspace_x: [-0.18, -0.03]
+screwdriver_workspace_y: [-0.15, 0.15]
 screwdriver_palm_front_offsets: [0.04, 0.22]
-screwdriver_palm_right_offsets: [0.04, 0.20]
+screwdriver_palm_right_offsets: [-0.20, 0.20]
 screwdriver_y_axis_angle_deg: [-35.0, 35.0]
+screwdriver_arc_center_xy: [-0.27, -0.05]
+screwdriver_arc_radius: [0.08, 0.28]
+screwdriver_arc_angle_deg: [135.0, 225.0]
 
 # Safety
 max_joint_step: 0.1

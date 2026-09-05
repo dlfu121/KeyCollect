@@ -51,18 +51,51 @@ DEXHAND_JOINT_FRICTIONLOSS = 0.005
 SCREWDRIVER_HEX_MESH = "screwdriver_hex_handle"
 SCREWDRIVER_FLAT_HANDLE_QUAT = "0.683013 0.183013 0.683013 0.183013"
 
-# Work surface layout (metres).  The robot stand top is at z=0.60 m;
-# keeping the work surface slightly above it makes the objects easy to reach.
+# Work surface layout (metres).  The physical tabletop under the quadruped
+# is 1167 mm high.  The lowest vertex of the scaled STL assembly is about
+# 0.4921 m below its link origin, so place the link such that the STL feet rest
+# on that surface.
 WORK_TABLE_CENTER_X = 0
-WORK_TABLE_HEIGHT = 0.7
 WORK_TABLE_THICKNESS = 0.04
+DOG_SUPPORT_TABLE_HEIGHT = 1.167
 
-# Low fixed camera: 8 cm in front of the RM65 base centre and 10 cm above the
-# tabletop.  A wide field of view keeps the full randomized screwdriver
-# envelope visible despite the deliberately low mounting height.
-TABLE_CAMERA_POS = (-0.62, 0.0, WORK_TABLE_HEIGHT + 0.10)
-TABLE_CAMERA_TARGET = (-0.04, -0.08, WORK_TABLE_HEIGHT + 0.02)
-TABLE_CAMERA_FOVY_DEG = 100
+# The quadruped meshes are exported in a CAD unit whose numerical values are
+# roughly four times larger than millimetres.  This scale gives the assembled
+# dog a plausible footprint (about 0.48 m wide by 0.72 m long).  The whole arm
+# assembly is translated with the dog when the support-table height changes.
+DOG_MESH_SCALE = "0.00025 0.00025 0.00025"
+DOG_LINK_NAME = "robot_stand_top"
+DOG_WORLD_X = -0.7
+DOG_WORLD_Y = 0.0
+# Measured from the scaled dog_visual_4 mesh (the lowest foot vertex).
+DOG_MESH_BOTTOM_REL_Z = -0.492077
+DOG_WORLD_Z = DOG_SUPPORT_TABLE_HEIGHT - DOG_MESH_BOTTOM_REL_Z
+DOG_MOUNT_TOP_Z = DOG_WORLD_Z + 0.02
+# Preserve the original 100 mm vertical offset between the arm mounting plane
+# and the screwdriver tabletop.  This keeps both task objects at the same
+# relative height when the dog support pose is adjusted.
+WORK_TABLE_HEIGHT = DOG_MOUNT_TOP_Z + 0.10
+DOG_MESH_CENTER_X = 0.273259
+DOG_MESH_CENTER_Y = 0.367309
+# The imported mesh AABB reaches about 0.0005 m above the dog link origin;
+# the visual origins below keep the dog centred on its support and the arm
+# mounting plane 20 mm above the dog link origin.
+DOG_MESH_TOP_Z = 0.551145
+DOG_VISUALS = (
+    (0, 0.00, 0.00, 0.12),
+    (1, 0.12, 0.07, 0.06),
+    (2, 0.12, -0.07, 0.06),
+    (3, -0.14, 0.07, 0.05),
+    (4, -0.14, -0.07, 0.05),
+    (5, 0.00, 0.00, 0.22),
+)
+
+# Low fixed camera at the worktable's robot-side edge (x=-0.5), 10 cm above
+# the tabletop.  The very wide view keeps the full left/right randomized
+# screwdriver envelope visible at this close mounting distance.
+TABLE_CAMERA_POS = (-0.50, 0.0, WORK_TABLE_HEIGHT + 0.10)
+TABLE_CAMERA_TARGET = (-0.04, 0.0, WORK_TABLE_HEIGHT + 0.02)
+TABLE_CAMERA_FOVY_DEG = 70
 
 # Keep the legacy observation name, but mount this camera at the palm.  The
 # palm-centre site is (0.000175, 0.001232, 0.016614) in link_6; add 20 mm along
@@ -246,15 +279,76 @@ def append_world_extras(robot: ET.Element) -> None:
     )
 
 
-def append_robot_stand_table(robot: ET.Element) -> None:
-    add_box(robot, "robot_stand_top", "world", "-0.7 0 0.58", "0.70 0.55 0.04", "0.42 0.42 0.45 1")
+def append_robot_dog_base(robot: ET.Element) -> None:
+    """Replace the old four-legged support table with the quadruped model.
+
+    The link keeps the historical ``robot_stand_top`` name so the existing
+    ``world_to_base`` attachment and control interface remain valid.  Its
+    vertical pose is derived from the 1.167 m support-table height.  The STL
+    meshes have a large CAD-coordinate offset, therefore each visual origin
+    recentres its mesh before applying the common scale.  The dog is represented
+    by its STL visuals directly; no primitive box is used as its visible model.
+    """
+    link = ET.SubElement(robot, "link", {"name": DOG_LINK_NAME})
+    for index, x, y, z in DOG_VISUALS:
+        visual = ET.SubElement(link, "visual")
+        ET.SubElement(
+            visual,
+            "origin",
+            {
+                "xyz": f"{x - DOG_MESH_CENTER_X:.6f} {y - DOG_MESH_CENTER_Y:.6f} {z - DOG_MESH_TOP_Z:.6f}",
+                "rpy": "0 0 0",
+            },
+        )
+        geometry = ET.SubElement(visual, "geometry")
+        ET.SubElement(
+            geometry,
+            "mesh",
+            {
+                "filename": f"../dog/dog_visual_{index}.STL",
+                "scale": DOG_MESH_SCALE,
+            },
+        )
+        material = ET.SubElement(visual, "material", {"name": f"dog_visual_{index}_mat"})
+        ET.SubElement(material, "color", {"rgba": "0.32 0.34 0.38 1"})
+
+    joint = ET.SubElement(robot, "joint", {"name": "world_to_robot_stand_top", "type": "fixed"})
+    joint.extend(
+        [
+            ET.Element("origin", {"xyz": f"{DOG_WORLD_X:g} {DOG_WORLD_Y:g} {DOG_WORLD_Z:g}", "rpy": "0 0 0"}),
+            ET.Element("parent", {"link": "world"}),
+            ET.Element("child", {"link": DOG_LINK_NAME}),
+        ]
+    )
+
+
+def append_dog_support_table(robot: ET.Element) -> None:
+    """Add the raised tabletop on which the quadruped's feet rest."""
+    top_center_z = DOG_SUPPORT_TABLE_HEIGHT - WORK_TABLE_THICKNESS / 2
+    leg_height = DOG_SUPPORT_TABLE_HEIGHT - WORK_TABLE_THICKNESS
+    leg_center_z = leg_height / 2
+    add_box(
+        robot,
+        "dog_support_table_top",
+        "world",
+        f"{DOG_WORLD_X} {DOG_WORLD_Y} {top_center_z:.3f}",
+        "1.0 0.9 0.04",
+        "0.42 0.40 0.38 1",
+    )
     for name, x, y in (
-        ("robot_stand_leg_fl", "-0.98", "-0.22"),
-        ("robot_stand_leg_fr", "-0.42", "-0.22"),
-        ("robot_stand_leg_bl", "-0.98", "0.22"),
-        ("robot_stand_leg_br", "-0.42", "0.22"),
+        ("dog_support_table_leg_fl", DOG_WORLD_X - 0.45, DOG_WORLD_Y - 0.40),
+        ("dog_support_table_leg_fr", DOG_WORLD_X + 0.45, DOG_WORLD_Y - 0.40),
+        ("dog_support_table_leg_bl", DOG_WORLD_X - 0.45, DOG_WORLD_Y + 0.40),
+        ("dog_support_table_leg_br", DOG_WORLD_X + 0.45, DOG_WORLD_Y + 0.40),
     ):
-        add_box(robot, name, "world", f"{x} {y} 0.29", "0.06 0.06 0.58", "0.32 0.32 0.35 1")
+        add_box(
+            robot,
+            name,
+            "world",
+            f"{x:.3f} {y:.3f} {leg_center_z:.3f}",
+            f"0.08 0.08 {leg_height:.3f}",
+            "0.35 0.35 0.38 1",
+        )
 
 
 def append_work_table_scene(robot: ET.Element) -> None:
@@ -280,7 +374,9 @@ def append_work_table_scene(robot: ET.Element) -> None:
     # The flat hex-handle face is 18 mm from the centre; start it directly on
     # the tabletop instead of dropping it from above and inducing a flip.
     object_z = WORK_TABLE_HEIGHT + 0.018
-    add_screwdriver(robot, "screwdriver_red", f"-0.08 -0.02 {object_z:.3f}", "0.85 0.15 0.15 1", np.deg2rad(70.0))
+    # Authored fixed pose is on the palm's left-front side; runtime resets can
+    # sample either left or right through the symmetric palm-relative range.
+    add_screwdriver(robot, "screwdriver_red", f"-0.08 0.12 {object_z:.3f}", "0.85 0.15 0.15 1", np.deg2rad(70.0))
 
 
 def append_actuators(robot: ET.Element) -> None:
@@ -397,6 +493,7 @@ def export_mjcf(urdf_path: Path, mjcf_path: Path) -> None:
     hand_body = root.find(".//body[@name='link_6']")
     if hand_body is None:
         raise ValueError("Exported MJCF does not contain the wrist body 'link_6'.")
+    hand_body.set("childclass", "hand_surface")
     ET.SubElement(
         hand_body,
         "site",
@@ -455,6 +552,8 @@ def export_mjcf(urdf_path: Path, mjcf_path: Path) -> None:
             "solimp": "0.85 0.95 0.005 0.5 2",
         },
     )
+    hand_surface_default = ET.SubElement(default, "default", {"class": "hand_surface"})
+    ET.SubElement(hand_surface_default, "geom", {"friction": "2.2 0.01 0.001"})
     ET.SubElement(root, "statistic", {"center": "0 0 0.7", "extent": "3.2"})
     visual = ET.SubElement(root, "visual")
     ET.SubElement(visual, "headlight", {"ambient": "0.35 0.35 0.35", "diffuse": "0.65 0.65 0.65", "specular": "0.2 0.2 0.2"})
@@ -633,7 +732,8 @@ def build_scene(args: argparse.Namespace) -> None:
     rewrite_mesh_paths(hand_root, "hand")
     add_mujoco_defaults(arm_root)
     append_world_extras(arm_root)
-    append_robot_stand_table(arm_root)
+    append_robot_dog_base(arm_root)
+    append_dog_support_table(arm_root)
     append_work_table_scene(arm_root)
     append_hand_to_arm(
         arm_root,

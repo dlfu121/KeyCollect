@@ -336,6 +336,25 @@ class MuJoCoSimulation:
         image = self._renderer.render()
         return image.copy()
 
+    def render_depth_camera(
+        self, camera_name: str, width: int = 480, height: int = 480
+    ) -> np.ndarray:
+        """Render metric camera depth as a float32 ``(H, W, 1)`` array in metres."""
+        if self._model is None or self._data is None:
+            raise RuntimeError("Simulation not loaded.")
+
+        self.validate_camera(camera_name)
+        if self._renderer is None or self._renderer.height != height or self._renderer.width != width:
+            self._renderer = mujoco.Renderer(self._model, height=height, width=width)
+
+        self._renderer.update_scene(self._data, camera=camera_name)
+        self._renderer.enable_depth_rendering()
+        try:
+            depth = self._renderer.render().copy()
+        finally:
+            self._renderer.disable_depth_rendering()
+        return depth.astype(np.float32, copy=False)[..., np.newaxis]
+
     def render_cameras(
         self, camera_configs: dict[str, tuple[int, int]]
     ) -> dict[str, np.ndarray]:

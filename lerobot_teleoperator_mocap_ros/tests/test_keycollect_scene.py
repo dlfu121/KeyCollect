@@ -48,6 +48,39 @@ class KeyCollectSceneIntegrationTest(unittest.TestCase):
             data.qpos[:6], np.deg2rad([0.0, -90.0, 45.0, 0.0, -45.0, 180.0]), atol=1e-6
         )
 
+    def test_front_camera_is_fixed_and_wrist_camera_follows_link_6(self) -> None:
+        model, _ = self.load_home()
+        table_camera_id = mujoco.mj_name2id(
+            model, mujoco.mjtObj.mjOBJ_CAMERA, "table_camera"
+        )
+        wrist_camera_id = mujoco.mj_name2id(
+            model, mujoco.mjtObj.mjOBJ_CAMERA, "wrist_overhead_camera"
+        )
+        link_6_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "link_6")
+
+        self.assertEqual(model.cam_bodyid[table_camera_id], 0)
+        self.assertEqual(model.cam_bodyid[wrist_camera_id], link_6_id)
+
+    def test_metric_depth_render_has_expected_shape_and_range(self) -> None:
+        if not LEROBOT_AVAILABLE:
+            self.skipTest("lerobot is not installed in this Python environment")
+
+        from lerobot_robot_mujoco.simulation import MuJoCoSimulation
+
+        scene = ROOT / "assets" / "scenes" / "rm65_dexhand_scene.xml"
+        sim = MuJoCoSimulation(str(scene))
+        sim.load()
+        sim.reset()
+        try:
+            depth = sim.render_depth_camera("table_camera", width=160, height=120)
+            self.assertEqual(depth.shape, (120, 160, 1))
+            self.assertEqual(depth.dtype, np.float32)
+            self.assertTrue(np.all(np.isfinite(depth)))
+            self.assertGreater(float(depth.min()), 0.0)
+            self.assertGreater(float(depth.max()), float(depth.min()))
+        finally:
+            sim.close()
+
     def test_robot_uses_position_servos_and_holds_home(self) -> None:
         model, data = self.load_home()
         self.assertEqual(model.nu, 26)

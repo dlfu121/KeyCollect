@@ -3,13 +3,13 @@ type: mocap_ros
 
 wrist_topic: /right_wrist_pose
 joint_topic: /right_joint_poses
-transport: auto
+transport: rosbridge
 
 # Translation: robot XYZ <- mocap Z, X, Y.
 position_axis_map: [0, 0, 1, 1, 0, 0, 0, 1, 0]
 orientation_axis_map: [0, -1, 0, 0, 0, 1, -1, 0, 0]
 position_scale: 0.01
-orientation_scale: 1.0
+orientation_scale: 0.4
 finger_scale: 1.0
 pip_dip_coupling: 1.0
 finger_spread_coupling: [1.0, 1.0, 1.0]

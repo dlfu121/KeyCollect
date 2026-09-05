@@ -55,3 +55,15 @@ tmp/
 temp/
 *.tmp
 *:Zone.Identifier
+# data
+/data
+
+# Local model and training artifacts (too large for regular GitHub Git storage)
+/model/
+/outputs/
+
+# Generated local backups and accidentally materialized CLI argument files
+*.bak
+/--checkpoint
+/--dataset-root
+/--random-seed

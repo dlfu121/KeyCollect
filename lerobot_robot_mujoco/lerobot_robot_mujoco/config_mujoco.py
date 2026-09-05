@@ -34,11 +34,18 @@ class MuJoCoRobotConfig(RobotConfig):
     gripper_joint_names: list[str] = field(default_factory=list)
     ee_site_name: str = "ee_site"
     cameras: dict[str, CameraConfig] = field(default_factory=dict)
+    # Named MuJoCo cameras that also expose metric depth observations. Each
+    # entry adds ``<camera_name>_depth`` with shape (H, W, 1), float32 metres.
+    depth_camera_names: list[str] = field(default_factory=list)
 
     # Simulation
     physics_dt: float = 0.001
-    control_fps: int = 30
+    control_fps: int = 24
     show_viewer: bool = False
+    show_camera_panel: bool = False
+    show_mapping_markers: bool = True
+    camera_panel_width: int = 960
+    camera_panel_height: int = 480
 
     # Safety
     max_joint_step: float = 0.1
@@ -53,11 +60,19 @@ class MuJoCoRobotConfig(RobotConfig):
 
     # Object randomization
     randomize_screwdrivers: bool = True
-    # Sample handle centres relative to the palm.  At the authored home pose,
-    # palm-forward is approximately world +X and palm-right is world -Y.
-    screwdriver_workspace_x: tuple[float, float] = (-0.22, 0.02)
-    screwdriver_workspace_y: tuple[float, float] = (-0.22, 0.04)
+    screwdriver_use_arc: bool = False
+    # Sample handle centres across both sides of the palm.  At the authored
+    # home pose, palm-forward is approximately world +X and palm-right is
+    # world -Y; negative right offsets therefore cover the palm's left side.
+    screwdriver_workspace_x: tuple[float, float] = (-0.18, -0.03)
+    screwdriver_workspace_y: tuple[float, float] = (-0.15, 0.15)
     screwdriver_palm_front_offsets: tuple[float, float] = (0.04, 0.22)
-    screwdriver_palm_right_offsets: tuple[float, float] = (0.04, 0.20)
+    screwdriver_palm_right_offsets: tuple[float, float] = (-0.20, 0.20)
     # Signed planar angle from world +Y; zero means parallel to the y axis.
     screwdriver_y_axis_angle_deg: tuple[float, float] = (-35.0, 35.0)
+    # Annular-sector placement in the table-camera's lower-right quadrant.
+    # The sector angle is measured from world +Y; 180 degrees points toward
+    # world -Y, with the surrounding sector covering -X/-Y positions.
+    screwdriver_arc_center_xy: tuple[float, float] = (-0.27, -0.05)
+    screwdriver_arc_radius: tuple[float, float] = (0.08, 0.28)
+    screwdriver_arc_angle_deg: tuple[float, float] = (135.0, 225.0)

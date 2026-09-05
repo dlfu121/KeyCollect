@@ -1,0 +1,127 @@
+# Complete LeRobot 0.6.1 recording configuration.
+# Run with: lerobot-record --config_path=config/record_mujoco.yaml
+
+robot:
+  type: mujoco
+  id: rm65_dexhand
+  scene_path: assets/scenes/rm65_dexhand_scene.xml
+  ee_site_name: link_6
+  arm_joint_names:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+  gripper_joint_names:
+    - r_f_joint1_1
+    - r_f_joint1_2
+    - r_f_joint1_3
+    - r_f_joint1_4
+    - r_f_joint2_1
+    - r_f_joint2_2
+    - r_f_joint2_3
+    - r_f_joint2_4
+    - r_f_joint3_1
+    - r_f_joint3_2
+    - r_f_joint3_3
+    - r_f_joint3_4
+    - r_f_joint4_1
+    - r_f_joint4_2
+    - r_f_joint4_3
+    - r_f_joint4_4
+    - r_f_joint5_1
+    - r_f_joint5_2
+    - r_f_joint5_3
+    - r_f_joint5_4
+  cameras:
+    table_camera:
+      type: opencv
+      index_or_path: 0
+      width: 640
+      height: 480
+      fps: 24
+    wrist_overhead_camera:
+      type: opencv
+      index_or_path: 0
+      width: 640
+      height: 480
+      fps: 24
+  # The front camera is fixed in world coordinates together with the robot
+  # base. Its depth observation is float32 metres with shape (H, W, 1).
+  depth_camera_names:
+    - table_camera
+  physics_dt: 0.001
+  control_fps: 24
+  show_viewer: true
+  # Show the fixed-camera MuJoCo panel alongside the LeRobot/Rerun view.
+  show_camera_panel: true
+  show_mapping_markers: false
+  camera_panel_width: 960
+  camera_panel_height: 480
+  max_joint_step: 0.1
+  max_finger_step: 0.05
+  joint_limit_margin: 0.01
+  ik_damping: 0.05
+  ik_max_iterations: 50
+  ik_pos_tol: 0.005
+  ik_ori_tol: 0.05
+  randomize_screwdrivers: true
+  screwdriver_use_arc: false
+  # Small screwdriver workspace shared with scripts/teleop.py.
+  screwdriver_workspace_x: [-0.18, -0.03]
+  screwdriver_workspace_y: [-0.15, 0.15]
+  screwdriver_palm_front_offsets: [0.04, 0.22]
+  screwdriver_palm_right_offsets: [-0.20, 0.20]
+  screwdriver_y_axis_angle_deg: [-35.0, 35.0]
+  screwdriver_arc_center_xy: [-0.27, -0.05]
+  screwdriver_arc_radius: [0.08, 0.28]
+  screwdriver_arc_angle_deg: [135.0, 225.0]
+
+teleop:
+  type: mocap_ros
+  wrist_topic: /right_wrist_pose
+  joint_topic: /right_joint_poses
+  transport: auto
+  rosbridge_host: 127.0.0.1
+  rosbridge_port: 9090
+  position_axis_map: [0, 0, 1, 1, 0, 0, 0, 1, 0]
+  orientation_axis_map: [0, -1, 0, 0, 0, 1, -1, 0, 0]
+  position_scale: 0.01
+  # Use 40% of the wrist rotation from the glove for stable teleoperation.
+  orientation_scale: 0.4
+  finger_scale: 1.0
+  finger_filter_alpha: 0.45
+  finger_deadband_rad: 0.003
+  finger_outlier_threshold: 0.40
+  pip_dip_coupling: 1.0
+  finger_spread_coupling: [1.0, 1.0, 1.0]
+  max_translation_delta_m: 0.005
+  max_rotation_delta_rad: 0.04
+  max_finger_delta_rad: 0.05
+  stale_timeout_s: 0.25
+  expected_joint_values: 57
+
+dataset:
+  repo_id: local/rm65_dexhand_run_001
+  single_task: Use the RM65 DexHand to grasp a screwdriver
+  root: /media/ee304/FDL/rm65_dexhand_run_001
+  fps: 24
+  # Streaming video encoding: frames are handed to a background encoder queue
+  # and encoded to MP4 while recording, so saving an episode or discarding one
+  # for re-recording returns quickly even on slow storage (e.g. a vfat USB).
+  video: true
+  streaming_encoding: true
+  encoder_threads: 2
+  num_episodes: 5
+  episode_time_s: 30
+  reset_time_s: 0
+  push_to_hub: false
+
+# Speech Dispatcher is not part of data collection and can mask the real
+# exception during cleanup on headless/EGL machines.
+play_sounds: false
+# Stream observations, actions, and camera frames to the local Rerun viewer.
+# LeRobot's Rerun SDK starts the viewer with rr.spawn() when recording begins.
+display_data: true
+display_mode: rerun

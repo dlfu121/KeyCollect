@@ -1,4 +1,4 @@
 # Simulation configuration
 physics_dt: 0.001     # 1000 Hz physics
-control_fps: 30       # 30 Hz control loop
-dataset_fps: 30       # 30 FPS recording
+control_fps: 24       # 24 Hz control loop
+dataset_fps: 24       # 24 FPS recording

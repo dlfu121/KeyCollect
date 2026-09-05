@@ -202,113 +202,174 @@
   <link name="world" />
   <link name="robot_stand_top">
     <visual>
-      <origin xyz="0 0 0" rpy="0 0 0" />
+      <origin xyz="-0.273259 -0.367309 -0.431145" rpy="0 0 0" />
       <geometry>
-        <box size="0.70 0.55 0.04" />
+        <mesh filename="../dog/dog_visual_0.STL" scale="0.00025 0.00025 0.00025" />
       </geometry>
-      <material name="robot_stand_top_mat">
-        <color rgba="0.42 0.42 0.45 1" />
+      <material name="dog_visual_0_mat">
+        <color rgba="0.32 0.34 0.38 1" />
       </material>
     </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="0 0 0" />
+    <visual>
+      <origin xyz="-0.153259 -0.297309 -0.491145" rpy="0 0 0" />
       <geometry>
-        <box size="0.70 0.55 0.04" />
+        <mesh filename="../dog/dog_visual_1.STL" scale="0.00025 0.00025 0.00025" />
       </geometry>
-    </collision>
+      <material name="dog_visual_1_mat">
+        <color rgba="0.32 0.34 0.38 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="-0.153259 -0.437309 -0.491145" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../dog/dog_visual_2.STL" scale="0.00025 0.00025 0.00025" />
+      </geometry>
+      <material name="dog_visual_2_mat">
+        <color rgba="0.32 0.34 0.38 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="-0.413259 -0.297309 -0.501145" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../dog/dog_visual_3.STL" scale="0.00025 0.00025 0.00025" />
+      </geometry>
+      <material name="dog_visual_3_mat">
+        <color rgba="0.32 0.34 0.38 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="-0.413259 -0.437309 -0.501145" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../dog/dog_visual_4.STL" scale="0.00025 0.00025 0.00025" />
+      </geometry>
+      <material name="dog_visual_4_mat">
+        <color rgba="0.32 0.34 0.38 1" />
+      </material>
+    </visual>
+    <visual>
+      <origin xyz="-0.273259 -0.367309 -0.331145" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../dog/dog_visual_5.STL" scale="0.00025 0.00025 0.00025" />
+      </geometry>
+      <material name="dog_visual_5_mat">
+        <color rgba="0.32 0.34 0.38 1" />
+      </material>
+    </visual>
   </link>
   <joint name="world_to_robot_stand_top" type="fixed">
-    <origin xyz="-0.7 0 0.58" rpy="0 0 0" />
+    <origin xyz="-0.7 0 1.65908" rpy="0 0 0" />
     <parent link="world" />
     <child link="robot_stand_top" />
   </joint>
-  <link name="robot_stand_leg_fl">
+  <link name="dog_support_table_top">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.06 0.06 0.58" />
+        <box size="1.0 0.9 0.04" />
       </geometry>
-      <material name="robot_stand_leg_fl_mat">
-        <color rgba="0.32 0.32 0.35 1" />
+      <material name="dog_support_table_top_mat">
+        <color rgba="0.42 0.40 0.38 1" />
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.06 0.06 0.58" />
+        <box size="1.0 0.9 0.04" />
       </geometry>
     </collision>
   </link>
-  <joint name="world_to_robot_stand_leg_fl" type="fixed">
-    <origin xyz="-0.98 -0.22 0.29" rpy="0 0 0" />
+  <joint name="world_to_dog_support_table_top" type="fixed">
+    <origin xyz="-0.7 0.0 1.147" rpy="0 0 0" />
     <parent link="world" />
-    <child link="robot_stand_leg_fl" />
+    <child link="dog_support_table_top" />
   </joint>
-  <link name="robot_stand_leg_fr">
+  <link name="dog_support_table_leg_fl">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.06 0.06 0.58" />
+        <box size="0.08 0.08 1.127" />
       </geometry>
-      <material name="robot_stand_leg_fr_mat">
-        <color rgba="0.32 0.32 0.35 1" />
+      <material name="dog_support_table_leg_fl_mat">
+        <color rgba="0.35 0.35 0.38 1" />
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.06 0.06 0.58" />
+        <box size="0.08 0.08 1.127" />
       </geometry>
     </collision>
   </link>
-  <joint name="world_to_robot_stand_leg_fr" type="fixed">
-    <origin xyz="-0.42 -0.22 0.29" rpy="0 0 0" />
+  <joint name="world_to_dog_support_table_leg_fl" type="fixed">
+    <origin xyz="-1.150 -0.400 0.564" rpy="0 0 0" />
     <parent link="world" />
-    <child link="robot_stand_leg_fr" />
+    <child link="dog_support_table_leg_fl" />
   </joint>
-  <link name="robot_stand_leg_bl">
+  <link name="dog_support_table_leg_fr">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.06 0.06 0.58" />
+        <box size="0.08 0.08 1.127" />
       </geometry>
-      <material name="robot_stand_leg_bl_mat">
-        <color rgba="0.32 0.32 0.35 1" />
+      <material name="dog_support_table_leg_fr_mat">
+        <color rgba="0.35 0.35 0.38 1" />
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.06 0.06 0.58" />
+        <box size="0.08 0.08 1.127" />
       </geometry>
     </collision>
   </link>
-  <joint name="world_to_robot_stand_leg_bl" type="fixed">
-    <origin xyz="-0.98 0.22 0.29" rpy="0 0 0" />
+  <joint name="world_to_dog_support_table_leg_fr" type="fixed">
+    <origin xyz="-0.250 -0.400 0.564" rpy="0 0 0" />
     <parent link="world" />
-    <child link="robot_stand_leg_bl" />
+    <child link="dog_support_table_leg_fr" />
   </joint>
-  <link name="robot_stand_leg_br">
+  <link name="dog_support_table_leg_bl">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.06 0.06 0.58" />
+        <box size="0.08 0.08 1.127" />
       </geometry>
-      <material name="robot_stand_leg_br_mat">
-        <color rgba="0.32 0.32 0.35 1" />
+      <material name="dog_support_table_leg_bl_mat">
+        <color rgba="0.35 0.35 0.38 1" />
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.06 0.06 0.58" />
+        <box size="0.08 0.08 1.127" />
       </geometry>
     </collision>
   </link>
-  <joint name="world_to_robot_stand_leg_br" type="fixed">
-    <origin xyz="-0.42 0.22 0.29" rpy="0 0 0" />
+  <joint name="world_to_dog_support_table_leg_bl" type="fixed">
+    <origin xyz="-1.150 0.400 0.564" rpy="0 0 0" />
     <parent link="world" />
-    <child link="robot_stand_leg_br" />
+    <child link="dog_support_table_leg_bl" />
+  </joint>
+  <link name="dog_support_table_leg_br">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.08 0.08 1.127" />
+      </geometry>
+      <material name="dog_support_table_leg_br_mat">
+        <color rgba="0.35 0.35 0.38 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.08 0.08 1.127" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="world_to_dog_support_table_leg_br" type="fixed">
+    <origin xyz="-0.250 0.400 0.564" rpy="0 0 0" />
+    <parent link="world" />
+    <child link="dog_support_table_leg_br" />
   </joint>
   <link name="work_table_top">
     <visual>
@@ -328,7 +389,7 @@
     </collision>
   </link>
   <joint name="world_to_work_table_top" type="fixed">
-    <origin xyz="0 0 0.680" rpy="0 0 0" />
+    <origin xyz="0 0 1.759" rpy="0 0 0" />
     <parent link="world" />
     <child link="work_table_top" />
   </joint>
@@ -336,7 +397,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.08 0.08 0.660" />
+        <box size="0.08 0.08 1.739" />
       </geometry>
       <material name="work_table_leg_fl_mat">
         <color rgba="0.35 0.35 0.38 1" />
@@ -345,12 +406,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.08 0.08 0.660" />
+        <box size="0.08 0.08 1.739" />
       </geometry>
     </collision>
   </link>
   <joint name="world_to_work_table_leg_fl" type="fixed">
-    <origin xyz="-0.450 -0.35 0.330" rpy="0 0 0" />
+    <origin xyz="-0.450 -0.35 0.870" rpy="0 0 0" />
     <parent link="world" />
     <child link="work_table_leg_fl" />
   </joint>
@@ -358,7 +419,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.08 0.08 0.660" />
+        <box size="0.08 0.08 1.739" />
       </geometry>
       <material name="work_table_leg_fr_mat">
         <color rgba="0.35 0.35 0.38 1" />
@@ -367,12 +428,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.08 0.08 0.660" />
+        <box size="0.08 0.08 1.739" />
       </geometry>
     </collision>
   </link>
   <joint name="world_to_work_table_leg_fr" type="fixed">
-    <origin xyz="0.450 -0.35 0.330" rpy="0 0 0" />
+    <origin xyz="0.450 -0.35 0.870" rpy="0 0 0" />
     <parent link="world" />
     <child link="work_table_leg_fr" />
   </joint>
@@ -380,7 +441,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.08 0.08 0.660" />
+        <box size="0.08 0.08 1.739" />
       </geometry>
       <material name="work_table_leg_bl_mat">
         <color rgba="0.35 0.35 0.38 1" />
@@ -389,12 +450,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.08 0.08 0.660" />
+        <box size="0.08 0.08 1.739" />
       </geometry>
     </collision>
   </link>
   <joint name="world_to_work_table_leg_bl" type="fixed">
-    <origin xyz="-0.450 0.35 0.330" rpy="0 0 0" />
+    <origin xyz="-0.450 0.35 0.870" rpy="0 0 0" />
     <parent link="world" />
     <child link="work_table_leg_bl" />
   </joint>
@@ -402,7 +463,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.08 0.08 0.660" />
+        <box size="0.08 0.08 1.739" />
       </geometry>
       <material name="work_table_leg_br_mat">
         <color rgba="0.35 0.35 0.38 1" />
@@ -411,18 +472,18 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.08 0.08 0.660" />
+        <box size="0.08 0.08 1.739" />
       </geometry>
     </collision>
   </link>
   <joint name="world_to_work_table_leg_br" type="fixed">
-    <origin xyz="0.450 0.35 0.330" rpy="0 0 0" />
+    <origin xyz="0.450 0.35 0.870" rpy="0 0 0" />
     <parent link="world" />
     <child link="work_table_leg_br" />
   </joint>
   <link name="screwdriver_red" />
   <joint name="world_to_screwdriver_red" type="floating">
-    <origin xyz="-0.08 -0.02 0.718" rpy="0 0 1.221730" />
+    <origin xyz="-0.08 0.12 1.797" rpy="0 0 1.221730" />
     <parent link="world" />
     <child link="screwdriver_red" />
   </joint>

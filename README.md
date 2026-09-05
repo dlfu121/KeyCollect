@@ -13,7 +13,7 @@ cd /home/ee304/dongziyue/KeyCollect
 conda activate keycollect
 sudo apt install -y libgl1-mesa-dev libglfw3 libglfw3-dev
 python -m pip install -U pip
-python -m pip install mujoco==3.11.0 'lerobot[dataset,viz]==0.6.1'
+python -m pip install mujoco==3.11.0 'lerobot[dataset,viz,training]==0.6.1'
 python -m pip install -e ./lerobot_robot_mujoco
 python -m pip install -e './lerobot_teleoperator_mocap_ros[rosbridge]'
 ```
@@ -259,38 +259,180 @@ python scripts/build_hardware_scene.py \
 
 ## 5. 数据采集
 
-先确认无录制遥操作正常，再运行项目的 MuJoCo 录制入口。该入口复用
-`lerobot-record` 的数据集和视频编码逻辑，并增加逐 episode 的快捷键与自动 reset：
+机器人、动捕、相机和数据集参数统一保存在 `config/record_mujoco.yaml`。
+默认的新环境包含三路视觉 observation：
 
-- `q`、`n` 或右方向键：结束并保存当前 episode，随后 reset 场景；
-- `r` 或左方向键：丢弃当前 episode，reset 后重新录制；
-- `Esc`：保存当前 episode、reset 场景并结束整个录制任务；
-- 达到 `episode_time_s` 时也会自动保存并 reset；
-- 每次 reset 都恢复 XML 的 `home` keyframe，然后重新随机排布红、蓝螺丝刀。
-
-```bash
-export MUJOCO_GL=egl
-python scripts/record_mujoco.py \
-  --robot.type=mujoco \
-  --robot.id=rm65_dexhand \
-  --robot.scene_path=assets/scenes/rm65_dexhand_scene.xml \
-  --robot.ee_site_name=link_6 \
-  --robot.arm_joint_names='["joint_1","joint_2","joint_3","joint_4","joint_5","joint_6"]' \
-  --robot.gripper_joint_names='["r_f_joint1_1","r_f_joint1_2","r_f_joint1_3","r_f_joint1_4","r_f_joint2_1","r_f_joint2_2","r_f_joint2_3","r_f_joint2_4","r_f_joint3_1","r_f_joint3_2","r_f_joint3_3","r_f_joint3_4","r_f_joint4_1","r_f_joint4_2","r_f_joint4_3","r_f_joint4_4","r_f_joint5_1","r_f_joint5_2","r_f_joint5_3","r_f_joint5_4"]' \
-  --robot.cameras='{"table_camera":{"type":"opencv","index_or_path":0,"width":640,"height":480,"fps":30},"wrist_overhead_camera":{"type":"opencv","index_or_path":0,"width":640,"height":480,"fps":30}}' \
-  --teleop.type=mocap_ros \
-  --teleop.transport=auto \
-  --dataset.repo_id=local/rm65_dexhand \
-  --dataset.single_task="Use the RM65 DexHand to grasp a screwdriver" \
-  --dataset.root=data/rm65_dexhand \
-  --dataset.fps=30 \
-  --dataset.num_episodes=5 \
-  --dataset.episode_time_s=30 \
-  --dataset.reset_time_s=0 \
-  --dataset.push_to_hub=false
+```text
+observation.images.table_camera             RGB，身前固定相机
+observation.images.wrist_overhead_camera    RGB，随 link_6 运动
+observation.images.table_camera_depth       float32 米制深度，形状 (480, 640, 1)
 ```
 
-建议每次采集使用新的 `data/<dataset_name>/` 目录。上传 Hugging Face 前先执行 `hf auth login`。
+身前 RGB 和深度使用同一个 MuJoCo 相机，因此像素严格对齐。身前相机与固定的机械臂
+底座都位于 world 坐标系，二者相对位姿不变。
+
+### 5.1 采集新的 RGB + Depth 数据
+
+先确认无录制遥操作正常，再启动采集：
+
+```bash
+cd "$HOME/dongziyue/KeyCollect"
+source "$HOME/miniforge3/etc/profile.d/conda.sh"
+conda activate keycollect
+
+python scripts/record_next.py --profile depth
+```
+
+`depth` 是默认 profile，因此也可以省略 `--profile depth`。启动器会设置
+`MUJOCO_GL=glfw`，并在 `/media/ee304/FDL` 下选择第一个未占用目录：
+
+```text
+/media/ee304/FDL/rm65_dexhand_depth_run_001
+/media/ee304/FDL/rm65_dexhand_depth_run_002
+/media/ee304/FDL/rm65_dexhand_depth_run_003
+...
+```
+
+已存在的目录不会被覆盖。运行前可以预览编号和实际命令：
+
+```bash
+python scripts/record_next.py --profile depth --dry-run
+```
+
+录制中，`q` / `n` / `Right` 保存当前 episode 并进入下一条，`r` / `Left`
+放弃当前 episode 并立即重录，`Esc` 保存当前 episode 后结束整个采集会话。
+
+临时覆盖 episode 数量或时长：
+
+```bash
+python scripts/record_next.py --profile depth \
+  --dataset.num_episodes=10 \
+  --dataset.episode_time_s=45
+```
+
+深度帧以浮点米为输入，由 LeRobot 的 depth encoder 单独编码；它不会被当作普通
+RGB 视频。不要向旧的 RGB-only 数据集 resume 写入，因为新旧 feature schema 不同。
+
+### 5.2 合并新的深度数据
+
+只合并 `rm65_dexhand_depth_run_*`：
+
+```bash
+python scripts/merge_datasets.py \
+  --profile depth \
+  --data_root /media/ee304/FDL
+```
+
+默认输出：
+
+```text
+目录：data/rm65_dexhand_depth_merged
+repo：local/rm65_dexhand_depth_merged
+```
+
+合并脚本按 profile 筛选，因此不会把旧 RGB 数据误混进深度数据。需要跳过某些采集
+批次时，例如跳过 2 和 5：
+
+```bash
+python scripts/merge_datasets.py --profile depth --exclude 2 5
+```
+
+### 5.3 检查合并后的深度特征
+
+```bash
+python -c "from lerobot.datasets.dataset_metadata import LeRobotDatasetMetadata; m=LeRobotDatasetMetadata('local/rm65_dexhand_depth_merged', root='data/rm65_dexhand_depth_merged'); print(m.features['observation.images.table_camera_depth']); print('depth_keys:', m.depth_keys)"
+```
+
+必须看到：
+
+```text
+shape: [480, 640, 1]
+is_depth_map: true
+depth_keys: ['observation.images.table_camera_depth']
+```
+
+### 5.4 训练 RGB + Depth ACT
+
+标准 ResNet18 只接受三通道输入，而数据集保留的是单通道米制深度。必须通过项目的
+`train_act_depth.py` 启动训练；它只在深度进入共享 ResNet 前把 `C=1` 复制成
+`C=3`，RGB 图像保持不变。该入口会强制 LeRobot 解码深度时使用米，确保采集、
+训练归一化统计和在线推理始终使用同一单位。
+
+```bash
+python scripts/train_act_depth.py \
+  --policy.type=act \
+  --policy.device=cuda \
+  --policy.pretrained_backbone_weights=ResNet18_Weights.IMAGENET1K_V1 \
+  --policy.push_to_hub=false \
+  --dataset.repo_id=local/rm65_dexhand_depth_merged \
+  --dataset.root=/home/ee304/dongziyue/KeyCollect/data/rm65_dexhand_depth_merged \
+  --dataset.depth_output_unit=m \
+  --dataset.video_backend=pyav \
+  --output_dir=outputs/train/act_rm65_dexhand_depth \
+  --batch_size=16 \
+  --steps=40000 \
+  --save_freq=20000 \
+  --env_eval_freq=0
+```
+
+训练生成的 checkpoint 仍是标准 LeRobot ACT 格式，但其配置会声明三路视觉输入，
+其中 `table_camera_depth` 的形状为 `[1, 480, 640]`。
+
+### 5.5 推理 RGB + Depth ACT
+
+推理脚本会读取 checkpoint 声明的视觉特征，并自动安装与训练相同的单通道适配器：
+
+```bash
+MUJOCO_GL=glfw python scripts/infer_mujoco.py \
+  --checkpoint outputs/train/act_rm65_dexhand_depth \
+  --dataset-root /home/ee304/dongziyue/KeyCollect/data/rm65_dexhand_depth_merged \
+  --device cuda \
+  --random-seed 42
+```
+
+正常日志应包含：
+
+```text
+Policy ready: act on cuda
+Controlling ['table_camera', 'wrist_overhead_camera', 'table_camera_depth'] cameras at 24 Hz
+```
+
+`--device cuda` 会在 CUDA 不可用时直接报错，避免无意中退回 CPU；需要自动选择时可改为
+`--device auto`。
+
+### 5.6 旧 RGB 流程
+
+旧采集、合并、训练和推理仍可使用。旧 profile 会关闭深度并继续使用
+`rm65_dexhand_run_*` 前缀：
+
+```bash
+# 旧的两路 RGB 采集
+python scripts/record_next.py --profile rgb
+
+# 只合并旧 RGB 数据
+python scripts/merge_datasets.py --profile rgb
+
+# 旧 ACT 训练不需要深度适配器
+lerobot-train \
+  --policy.type=act \
+  --policy.device=cuda \
+  --policy.push_to_hub=false \
+  --dataset.repo_id=local/rm65_dexhand_merged \
+  --dataset.root=/home/ee304/dongziyue/KeyCollect/data/rm65_dexhand_merged \
+  --dataset.video_backend=pyav \
+  --output_dir=outputs/train/act_rm65_dexhand_rgb \
+  --batch_size=16 \
+  --steps=40000 \
+  --save_freq=20000 \
+  --env_eval_freq=0
+
+# 旧 checkpoint 仍由同一个推理脚本加载，只会请求原来的两路 RGB
+MUJOCO_GL=glfw python scripts/infer_mujoco.py \
+  --checkpoint outputs/train/act_rm65_dexhand_rgb \
+  --dataset-root /home/ee304/dongziyue/KeyCollect/data/rm65_dexhand_merged \
+  --device cuda \
+  --random-seed 42
+```
 
 
 ## 6. 工程结构

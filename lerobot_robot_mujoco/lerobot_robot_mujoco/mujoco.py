@@ -20,15 +20,32 @@ from lerobot.robots.robot import Robot
 from lerobot.robots.config import RobotConfig
 
 from .config_mujoco import MuJoCoRobotConfig
-from .rm65_kinematics import CartesianPoseTarget, damped_least_squares
+from .rm65_kinematics import CartesianPoseTarget
 from .simulation import MuJoCoSimulation
-from .safety import clip_joint_step, check_nan_inf, unwrap_revolute_targets
+from .safety import clip_joint_step, check_nan_inf
+from .teleop_runtime import (
+    CameraPanel,
+    RM65IKContinuitySelector,
+    analytic_action_to_joint_targets,
+    update_mapping_markers,
+)
+
+from rm65.rm65_ik import RM65Kinematics
 
 logger = logging.getLogger(__name__)
 
 RM65_BASE_HEIGHT_M = 0.2405
 RM65_THEORETICAL_FLANGE_RADIUS_M = 0.256 + 0.210 + 0.1725
-RM65_TASK_RADIUS_M = RM65_THEORETICAL_FLANGE_RADIUS_M - 0.05
+# The screwdriver handle mesh extends 82.656 mm from its center.  Keep a
+# rounded 83 mm envelope plus 5 mm numerical/modeling margin inside the flange
+# reach so the complete handle, rather than just its center, stays reachable.
+RM65_HANDLE_ENVELOPE_RADIUS_M = 0.083
+RM65_HANDLE_MARGIN_M = 0.005
+RM65_TASK_RADIUS_M = (
+    RM65_THEORETICAL_FLANGE_RADIUS_M
+    - RM65_HANDLE_ENVELOPE_RADIUS_M
+    - RM65_HANDLE_MARGIN_M
+)
 
 def _has_delta_motion(action: dict[str, Any]) -> bool:
     motion_keys = (
@@ -72,7 +89,10 @@ class MuJoCoRobot(Robot):
             physics_dt=config.physics_dt,
         )
         self._connected = False
-        self.cameras = config.cameras
+        self.cameras = dict(config.cameras)
+        for camera_name in config.depth_camera_names:
+            if camera_name in config.cameras:
+                self.cameras[f"{camera_name}_depth"] = config.cameras[camera_name]
         self._camera_configs: dict[str, tuple[int, int]] = {}
 
         # Build joint name lists
@@ -84,6 +104,12 @@ class MuJoCoRobot(Robot):
         self._rng = np.random.default_rng()
         self._screwdriver_body = "screwdriver_red"
         self._cartesian_target: CartesianPoseTarget | None = None
+        self._analytic_selector = RM65IKContinuitySelector(
+            RM65Kinematics("RM65-6F"),
+            sample_period=1.0 / max(1, config.control_fps),
+        )
+        self._hand_target = np.array([], dtype=np.float64)
+        self._camera_panel: CameraPanel | None = None
 
     @property
     def observation_features(self) -> dict:
@@ -107,6 +133,13 @@ class MuJoCoRobot(Robot):
         # before connect() has populated _camera_configs.
         for cam_name, cam_config in self.config.cameras.items():
             features[cam_name] = (cam_config.height, cam_config.width, 3)
+        for cam_name in self.config.depth_camera_names:
+            if cam_name not in self.config.cameras:
+                raise ValueError(
+                    f"Depth camera '{cam_name}' must also be present in cameras."
+                )
+            cam_config = self.config.cameras[cam_name]
+            features[f"{cam_name}_depth"] = (cam_config.height, cam_config.width, 1)
 
         return features
 
@@ -163,6 +196,11 @@ class MuJoCoRobot(Robot):
             # Validate camera exists in scene
             self._sim.validate_camera(cam_name)
             self._camera_configs[cam_name] = (cam_config.width, cam_config.height)
+        for cam_name in self.config.depth_camera_names:
+            if cam_name not in self._camera_configs:
+                raise ValueError(
+                    f"Depth camera '{cam_name}' must also be present in cameras."
+                )
 
         self._sim.reset()
         self._randomize_screwdrivers_if_enabled()
@@ -170,8 +208,28 @@ class MuJoCoRobot(Robot):
             current_positions = self._sim.get_joint_positions(self._all_joints)
             self._sim.set_joint_positions(self._all_joints, current_positions)
             self._sim.forward()
+        self._hand_target = (
+            self._sim.get_joint_positions(self._gripper_joints)
+            if self._gripper_joints
+            else np.array([], dtype=np.float64)
+        )
         if self.config.show_viewer:
             self._sim.launch_viewer()
+        if self.config.show_camera_panel:
+            self._camera_panel = CameraPanel(
+                self._sim,
+                list(self._camera_configs),
+                width=self.config.camera_panel_width,
+                height=self.config.camera_panel_height,
+            )
+            if self._camera_panel.enabled:
+                logger.info(
+                    "Camera panel running: %s",
+                    ", ".join(name for name, _ in self._camera_panel.cameras),
+                )
+                self._camera_panel.update()
+            else:
+                logger.warning("Camera panel was requested but could not be opened.")
         self._connected = True
         logger.info("MuJoCo robot connected. Joints: %s, Cameras: %s",
                      self._all_joints, list(self._camera_configs.keys()))
@@ -213,6 +271,11 @@ class MuJoCoRobot(Robot):
         for cam_name, (w, h) in self._camera_configs.items():
             img = self._sim.render_camera(cam_name, width=w, height=h)
             obs[cam_name] = img
+        for cam_name in self.config.depth_camera_names:
+            w, h = self._camera_configs[cam_name]
+            obs[f"{cam_name}_depth"] = self._sim.render_depth_camera(
+                cam_name, width=w, height=h
+            )
 
         return obs
 
@@ -263,7 +326,12 @@ class MuJoCoRobot(Robot):
         current = self._sim.get_joint_positions(joint_names)
 
         # Safety: clip step size
-        targets = clip_joint_step(current, targets, self.config.max_joint_step)
+        # The mocap delta path has already been rate-limited by MocapRosTeleop
+        # and solved with teleop.py's continuity-aware analytical IK. Applying
+        # another joint-space clip here would make recording control differ
+        # from scripts/teleop.py.
+        if not is_delta_action:
+            targets = clip_joint_step(current, targets, self.config.max_joint_step)
 
         # Safety: clip to joint limits
         targets = self._sim.clip_to_joint_limits(joint_names, targets, self.config.joint_limit_margin)
@@ -279,6 +347,18 @@ class MuJoCoRobot(Robot):
         # Step simulation to reach target
         steps_per_control = int(1.0 / (self.config.control_fps * self.config.physics_dt))
         self._sim.step(max(1, steps_per_control))
+        if (
+            self.config.show_mapping_markers
+            and self._cartesian_target is not None
+            and self.config.show_viewer
+        ):
+            update_mapping_markers(
+                self._sim,
+                self._cartesian_target.position_world,
+                self._ee_site,
+            )
+        if self._camera_panel is not None:
+            self._camera_panel.update()
 
         # Build executed action dict
         executed = {}
@@ -289,58 +369,33 @@ class MuJoCoRobot(Robot):
 
     def _delta_action_to_joint_action(self, action: dict[str, Any]) -> dict[str, float]:
         current_arm = self._sim.get_joint_positions(self._arm_joints)
-        translation_world = np.asarray(
-            [action.get("delta_x", 0.0), action.get("delta_y", 0.0), action.get("delta_z", 0.0)],
-            dtype=np.float64,
-        )
-        rotation_local = np.asarray(
-            [action.get("delta_roll", 0.0), action.get("delta_pitch", 0.0), action.get("delta_yaw", 0.0)],
-            dtype=np.float64,
-        )
-        jacp = np.zeros((3, self._sim.model.nv))
-        jacr = np.zeros((3, self._sim.model.nv))
         if self._ee_frame_type == "body":
             frame_id = self._sim.get_body_id(self._ee_site)
-            mujoco.mj_jacBody(self._sim.model, self._sim.data, jacp, jacr, frame_id)
             ee_position_world = self._sim.data.xpos[frame_id].copy()
             ee_rotation_world = self._sim.data.xmat[frame_id].reshape(3, 3).copy()
         else:
             frame_id = self._sim.get_site_id(self._ee_site)
-            mujoco.mj_jacSite(self._sim.model, self._sim.data, jacp, jacr, frame_id)
             ee_position_world = self._sim.data.site_xpos[frame_id].copy()
             ee_rotation_world = self._sim.data.site_xmat[frame_id].reshape(3, 3).copy()
 
         if self._cartesian_target is None:
             self._cartesian_target = CartesianPoseTarget.from_pose(ee_position_world, ee_rotation_world)
-        self._cartesian_target.integrate(translation_world, rotation_local)
-        pose_error = self._cartesian_target.error(ee_position_world, ee_rotation_world)
-        if np.linalg.norm(pose_error) > 1e-9:
-            full_jac = np.vstack([jacp, jacr])
-            cols = [int(self._sim.model.jnt_dofadr[self._sim.get_joint_id(name)]) for name in self._arm_joints]
-            jac = full_jac[:, cols]
-            # Keep correcting the absolute flange/TCP target on later frames.
-            # This prevents a damped or rate-limited step from losing residual
-            # wrist error, which is especially important near singularities.
-            dq = damped_least_squares(jac, pose_error, self.config.ik_damping)
-            candidate_arm = current_arm + np.clip(
-                dq, -self.config.max_joint_step, self.config.max_joint_step
-            )
-            # Select the 2*pi-equivalent wrist solution nearest the current
-            # state, avoiding a full J6 revolution at the angle branch cut.
-            candidate_arm = unwrap_revolute_targets(current_arm, candidate_arm)
-            current_arm = self._sim.clip_to_joint_limits(
-                self._arm_joints,
-                candidate_arm,
-                self.config.joint_limit_margin,
-            )
+        arm_targets = analytic_action_to_joint_targets(
+            self._sim,
+            action,
+            self._cartesian_target,
+            self._arm_joints,
+            self._analytic_selector,
+        )
+        if arm_targets is not None:
+            current_arm = arm_targets
 
-        current_hand = self._sim.get_joint_positions(self._gripper_joints) if self._gripper_joints else np.array([])
-        current_hand = self._apply_hand_action(action, current_hand)
+        self._hand_target = self._apply_hand_action(action, self._hand_target)
 
         joint_action = {}
         for name, value in zip(self._arm_joints, current_arm):
             joint_action[f"{name}.pos"] = float(value)
-        for name, value in zip(self._gripper_joints, current_hand):
+        for name, value in zip(self._gripper_joints, self._hand_target):
             joint_action[f"{name}.pos"] = float(value)
         return joint_action
 
@@ -363,6 +418,9 @@ class MuJoCoRobot(Robot):
 
     def disconnect(self) -> None:
         """Close simulation."""
+        if self._camera_panel is not None:
+            self._camera_panel.close()
+            self._camera_panel = None
         self._sim.close()
         self._connected = False
         logger.info("MuJoCo robot disconnected.")
@@ -373,23 +431,41 @@ class MuJoCoRobot(Robot):
         """Reset simulation state (e.g., at episode boundary)."""
         self._sim.reset()
         self._cartesian_target = None
+        self._analytic_selector = RM65IKContinuitySelector(
+            RM65Kinematics("RM65-6F"),
+            sample_period=1.0 / max(1, self.config.control_fps),
+        )
+        self._hand_target = (
+            self._sim.get_joint_positions(self._gripper_joints)
+            if self._gripper_joints
+            else np.array([], dtype=np.float64)
+        )
         self._randomize_screwdrivers_if_enabled()
 
     def _randomize_screwdrivers_if_enabled(self) -> None:
         if not getattr(self.config, "randomize_screwdrivers", False):
             return
 
-        x_bounds = tuple(getattr(self.config, "screwdriver_workspace_x", (-0.22, 0.02)))
-        y_bounds = tuple(getattr(self.config, "screwdriver_workspace_y", (-0.22, 0.04)))
+        x_bounds = tuple(getattr(self.config, "screwdriver_workspace_x", (-0.18, -0.03)))
+        y_bounds = tuple(getattr(self.config, "screwdriver_workspace_y", (-0.15, 0.15)))
         front_offsets = tuple(
             getattr(self.config, "screwdriver_palm_front_offsets", (0.04, 0.22))
         )
         right_offsets = tuple(
-            getattr(self.config, "screwdriver_palm_right_offsets", (0.04, 0.20))
+            getattr(self.config, "screwdriver_palm_right_offsets", (-0.20, 0.20))
         )
         angle_bounds_deg = tuple(
             getattr(self.config, "screwdriver_y_axis_angle_deg", (-35.0, 35.0))
         )
+        arc_center = np.asarray(
+            getattr(self.config, "screwdriver_arc_center_xy", (-0.27, -0.05)),
+            dtype=np.float64,
+        )
+        arc_radius = tuple(getattr(self.config, "screwdriver_arc_radius", (0.06, 0.16)))
+        arc_angle_deg = tuple(
+            getattr(self.config, "screwdriver_arc_angle_deg", (-65.0, 65.0))
+        )
+        use_arc = bool(getattr(self.config, "screwdriver_use_arc", False))
         palm_site = mujoco.mj_name2id(
             self._sim.model, mujoco.mjtObj.mjOBJ_SITE, "dexhand_palm_center"
         )
@@ -423,24 +499,64 @@ class MuJoCoRobot(Robot):
             return
         handle_height = self._sim.data.xpos[body_id, 2]
 
+        # Reject samples outside the table camera's view.  The camera is
+        # oblique, so a simple world-X bound is insufficient: world Y also
+        # changes the projected horizontal position.  Keep a small margin
+        # from each image edge to account for the screwdriver's extent.
+        camera_id = mujoco.mj_name2id(
+            self._sim.model, mujoco.mjtObj.mjOBJ_CAMERA, "table_camera"
+        )
+        if camera_id >= 0:
+            camera_pos = self._sim.model.cam_pos0[camera_id].copy()
+            camera_rotation = self._sim.model.cam_mat0[camera_id].reshape(3, 3)
+            vertical_half_fov = np.deg2rad(float(self._sim.model.cam_fovy[camera_id])) / 2.0
+            # The configured table camera is rendered at 640x480 (4:3).
+            horizontal_half_fov = np.arctan(np.tan(vertical_half_fov) * (4.0 / 3.0))
+            view_margin = 0.90
+
+            def inside_table_camera_view(point_xy: np.ndarray) -> bool:
+                camera_point = camera_rotation.T @ (
+                    np.array([point_xy[0], point_xy[1], handle_height]) - camera_pos
+                )
+                depth = -camera_point[2]
+                if depth <= 0.0:
+                    return False
+                return (
+                    abs(camera_point[0] / depth)
+                    <= np.tan(horizontal_half_fov) * view_margin
+                    and abs(camera_point[1] / depth)
+                    <= np.tan(vertical_half_fov) * view_margin
+                )
+        else:
+            inside_table_camera_view = lambda _point_xy: True
+
         handle_center: np.ndarray | None = None
         for _ in range(4096):
-            candidate = (
-                palm_xy
-                + self._rng.uniform(*front_offsets) * front_xy
-                + self._rng.uniform(*right_offsets) * right_xy
-            )
+            if use_arc:
+                arc_angle = np.deg2rad(self._rng.uniform(*arc_angle_deg))
+                arc_radius_value = self._rng.uniform(*arc_radius)
+                candidate = arc_center + arc_radius_value * np.array(
+                    [np.sin(arc_angle), np.cos(arc_angle)], dtype=np.float64
+                )
+            else:
+                # Uniformly cover the full configured workspace. The camera
+                # frustum check below removes only points outside the view.
+                candidate = np.array(
+                    [self._rng.uniform(*x_bounds), self._rng.uniform(*y_bounds)],
+                    dtype=np.float64,
+                )
             inside_workspace = (
                 x_bounds[0] <= candidate[0] <= x_bounds[1]
                 and y_bounds[0] <= candidate[1] <= y_bounds[1]
             )
+            inside_camera_view = inside_table_camera_view(candidate)
             inside_flange_radius = (
                 np.linalg.norm(
                     np.array([candidate[0], candidate[1], handle_height]) - base_position
                 )
                 <= RM65_TASK_RADIUS_M
             )
-            if inside_workspace and inside_flange_radius:
+            if inside_workspace and inside_camera_view and inside_flange_radius:
                 handle_center = candidate
                 break
         if handle_center is None:
