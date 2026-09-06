@@ -1,0 +1,250 @@
+{
+  "status": "checkpoint_artifacts_valid_but_training_and_evaluation_record_incomplete",
+  "checkpoint": "/home/ee304/dongziyue/KeyCollect/outputs/train/act_rm65_dexhand/checkpoints/040000/pretrained_model",
+  "checkpoint_step": 40000,
+  "checkpoint_sha256": "2e0e781757ac2eeb6a56542493296c30ce949a5f38e490628ae31cf043f82f6d",
+  "checkpoint_files": {
+    "config.json": "c204cb002b243c9b964fe57da7097584b388fbca1b0e2aa7022782a68cd191aa",
+    "model.safetensors": "2e0e781757ac2eeb6a56542493296c30ce949a5f38e490628ae31cf043f82f6d",
+    "policy_postprocessor.json": "6e3f52708f7a96e88675a3b503ab6f5bedacc2dbdf30d47f4ac8484f79711682",
+    "policy_postprocessor_step_0_unnormalizer_processor.safetensors": "03ab1f18f801e3c52d3dbe846cf1937d332e88a6a6f953106db25665a5e43b89",
+    "policy_preprocessor.json": "7340837e1de2420e0f616e904c1072e85fb0f3519186f3c233c5a66f566277ed",
+    "policy_preprocessor_step_3_normalizer_processor.safetensors": "71ffc28edcc216eb08e11b58f1c186426af205fa400bdae5f89862ce78a05b17",
+    "train_config.json": "5ca6620cc334ed5d6cdafd759153ef2db2f6aab4460c4b32d709173f13fb3862"
+  },
+  "random_seed": 1000,
+  "complete_train_config": {
+    "dataset": {
+      "repo_id": "local/rm65_dexhand_merged",
+      "repo_type": "dataset",
+      "root": "/home/ee304/dongziyue/KeyCollect/data/rm65_dexhand_merged",
+      "episodes": null,
+      "image_transforms": {
+        "enable": false,
+        "max_num_transforms": 3,
+        "random_order": false,
+        "tfs": {
+          "brightness": {
+            "weight": 1.0,
+            "type": "ColorJitter",
+            "kwargs": {
+              "brightness": [
+                0.8,
+                1.2
+              ]
+            }
+          },
+          "contrast": {
+            "weight": 1.0,
+            "type": "ColorJitter",
+            "kwargs": {
+              "contrast": [
+                0.8,
+                1.2
+              ]
+            }
+          },
+          "saturation": {
+            "weight": 1.0,
+            "type": "ColorJitter",
+            "kwargs": {
+              "saturation": [
+                0.5,
+                1.5
+              ]
+            }
+          },
+          "hue": {
+            "weight": 1.0,
+            "type": "ColorJitter",
+            "kwargs": {
+              "hue": [
+                -0.05,
+                0.05
+              ]
+            }
+          },
+          "sharpness": {
+            "weight": 1.0,
+            "type": "SharpnessJitter",
+            "kwargs": {
+              "sharpness": [
+                0.5,
+                1.5
+              ]
+            }
+          },
+          "affine": {
+            "weight": 1.0,
+            "type": "RandomAffine",
+            "kwargs": {
+              "degrees": [
+                -5.0,
+                5.0
+              ],
+              "translate": [
+                0.05,
+                0.05
+              ]
+            }
+          }
+        }
+      },
+      "revision": null,
+      "use_imagenet_stats": true,
+      "video_backend": "pyav",
+      "return_uint8": false,
+      "depth_output_unit": "mm",
+      "streaming": false,
+      "eval_split": 0.0
+    },
+    "env": null,
+    "policy": {
+      "type": "act",
+      "n_obs_steps": 1,
+      "input_features": {
+        "observation.state": {
+          "type": "STATE",
+          "shape": [
+            39
+          ]
+        },
+        "observation.images.table_camera": {
+          "type": "VISUAL",
+          "shape": [
+            3,
+            480,
+            640
+          ]
+        },
+        "observation.images.wrist_overhead_camera": {
+          "type": "VISUAL",
+          "shape": [
+            3,
+            480,
+            640
+          ]
+        }
+      },
+      "output_features": {
+        "action": {
+          "type": "ACTION",
+          "shape": [
+            26
+          ]
+        }
+      },
+      "device": "cuda",
+      "use_amp": false,
+      "use_peft": false,
+      "push_to_hub": false,
+      "repo_id": null,
+      "private": null,
+      "tags": null,
+      "license": null,
+      "pretrained_path": null,
+      "pretrained_revision": null,
+      "chunk_size": 100,
+      "n_action_steps": 100,
+      "normalization_mapping": {
+        "VISUAL": "MEAN_STD",
+        "STATE": "MEAN_STD",
+        "ACTION": "MEAN_STD"
+      },
+      "vision_backbone": "resnet18",
+      "pretrained_backbone_weights": "ResNet18_Weights.IMAGENET1K_V1",
+      "replace_final_stride_with_dilation": false,
+      "pre_norm": false,
+      "dim_model": 512,
+      "n_heads": 8,
+      "dim_feedforward": 3200,
+      "feedforward_activation": "relu",
+      "n_encoder_layers": 4,
+      "n_decoder_layers": 1,
+      "use_vae": true,
+      "latent_dim": 32,
+      "n_vae_encoder_layers": 4,
+      "temporal_ensemble_coeff": null,
+      "dropout": 0.1,
+      "kl_weight": 10.0,
+      "optimizer_lr": 1e-05,
+      "optimizer_weight_decay": 0.0001,
+      "optimizer_lr_backbone": 1e-05
+    },
+    "reward_model": null,
+    "output_dir": "outputs/train/act_rm65_dexhand",
+    "job_name": "act",
+    "resume": false,
+    "seed": 1000,
+    "cudnn_deterministic": false,
+    "num_workers": 4,
+    "batch_size": 32,
+    "prefetch_factor": 4,
+    "persistent_workers": true,
+    "dataloader_multiprocessing_context": "spawn",
+    "steps": 40000,
+    "env_eval_freq": 0,
+    "log_freq": 200,
+    "eval_steps": 0,
+    "max_eval_samples": 0,
+    "tolerance_s": 0.0001,
+    "save_checkpoint": true,
+    "save_freq": 20000,
+    "use_policy_training_preset": true,
+    "optimizer": {
+      "type": "adamw",
+      "lr": 1e-05,
+      "weight_decay": 0.0001,
+      "grad_clip_norm": 10.0,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "eps": 1e-08
+    },
+    "scheduler": null,
+    "eval": {
+      "n_episodes": 50,
+      "batch_size": 22,
+      "use_async_envs": true,
+      "recording": false,
+      "recording_repo_id": null,
+      "recording_private": false
+    },
+    "wandb": {
+      "enable": false,
+      "disable_artifact": false,
+      "project": "lerobot",
+      "entity": null,
+      "notes": null,
+      "run_id": null,
+      "mode": null,
+      "add_tags": true
+    },
+    "peft": null,
+    "job": {
+      "target": null,
+      "image": "huggingface/lerobot-gpu:latest",
+      "timeout": "2d",
+      "detach": false,
+      "tags": []
+    },
+    "save_checkpoint_to_hub": false,
+    "sample_weighting": null,
+    "rename_map": {},
+    "checkpoint_path": null
+  },
+  "dataset_declared_split": "train=0:127 (all episodes)",
+  "governed_split_available_after_training": "artifacts/dataset_audit/split.json",
+  "train_loss_history": "UNAVAILABLE_EMPTY_TRAINLOG",
+  "validation_loss_history": "UNAVAILABLE_NO_VALIDATION_SPLIT_OR_EVAL_STEPS",
+  "training_hardware": "UNAVAILABLE_NOT_RECORDED",
+  "training_duration": "UNAVAILABLE_NOT_RECORDED",
+  "dependency_versions_at_training_time": "UNAVAILABLE_NOT_RECORDED",
+  "current_audit_host": "Linux-5.15.0-139-generic-x86_64-with-glibc2.31",
+  "current_python": "3.12.13",
+  "current_git_revision": "255c14c4b671eeeeed83a12287556dc73fb2b2f2",
+  "independent_test_evaluation": "PENDING_RETRAIN_WITH_GOVERNED_SPLIT_AND_RUN_FIXED_TASKS",
+  "grasp_success_rate": "PENDING_MEASUREMENT",
+  "training_log_bytes": 0
+}

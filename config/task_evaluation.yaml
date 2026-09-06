@@ -1,0 +1,35 @@
+schema_version: 1
+task: grasp_screwdriver
+scene: assets/scenes/rm65_dexhand_scene.xml
+object_body: screwdriver_red
+object_root_z_m: 1.797
+position_sets_xy_m:
+  center: [-0.105, 0.000]
+  left_boundary: [-0.105, 0.140]
+  right_boundary: [-0.105, -0.140]
+  front_boundary: [-0.040, 0.000]
+  rear_boundary: [-0.170, 0.000]
+orientation_deg_from_world_y: [-35.0, -17.5, 0.0, 17.5, 35.0]
+visibility:
+  clear: {occluder_enabled: false}
+  partial_occlusion:
+    occluder_enabled: true
+    camera_ray_fraction: 0.72
+distribution:
+  in_distribution: {radial_scale_about_center: 1.0}
+  moderate_out_of_distribution: {radial_scale_about_center: 1.12}
+random_seed_base: 41000
+episode_duration_s: 20.0
+success_definition:
+  minimum_object_height_above_initial_m: 0.05
+  minimum_hold_time_s: 2.0
+  must_not_slip_during_hold: true
+  final_condition: object_remains_above_height_threshold
+required_run_fields:
+  [case_id, success, failure_reason, runtime_s, simulation_runtime_s,
+   inference_latency_s, ik_no_solution_count, collision_rejection_count,
+   action_preemption_count, actual_replanning_period_steps, video_path,
+   random_seed, initial_object_pose, scene_sha256, checkpoint_sha256]
+failure_reasons:
+  [ik_no_solution, collision_risk, target_lost, contact_force_limit, timeout,
+   object_slip, grasp_miss, placement_failure, operator_abort, unknown]

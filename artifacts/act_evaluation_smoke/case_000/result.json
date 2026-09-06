@@ -1,0 +1,73 @@
+{
+  "case_id": "case_000",
+  "distribution": "in_distribution",
+  "object_body": "screwdriver_red",
+  "object_pose_xyzw": [
+    -0.105,
+    0.0,
+    1.797,
+    0.0,
+    0.0,
+    0.4617486132350339,
+    0.8870108331782217
+  ],
+  "occluder": {
+    "occluder_enabled": false
+  },
+  "orientation_deg_from_world_y": -35.0,
+  "position_set": "center",
+  "random_seed": 41000,
+  "schema_version": 1,
+  "visibility": "clear",
+  "status": "smoke_incomplete",
+  "success": null,
+  "failure_reason": "NOT_EVALUATED_INCOMPLETE_DURATION",
+  "evaluation_complete": false,
+  "protocol_duration_s": 20.0,
+  "requested_simulation_duration_s": 0.02,
+  "runtime_s": 1.6173975630081259,
+  "simulation_runtime_s": 0.03300000000000002,
+  "inference_latency_s": {
+    "count": 1,
+    "mean": 0.137528711988125,
+    "p50": 0.137528711988125,
+    "p95": 0.137528711988125,
+    "max": 0.137528711988125
+  },
+  "ik_no_solution_count": 0,
+  "collision_rejection_count": 0,
+  "action_preemption_count": 0,
+  "actual_replanning_period_steps": [],
+  "video_path": "artifacts/act_evaluation_smoke/case_000/video/infer.mp4",
+  "initial_object_pose": [
+    -0.105,
+    0.0,
+    1.797,
+    0.0,
+    0.0,
+    0.4617486132350339,
+    0.8870108331782217
+  ],
+  "final_object_pose": [
+    -0.10499082458291459,
+    1.3082136365518987e-05,
+    1.7966553680384025,
+    -0.0002222965068918098,
+    0.0004277397684008757,
+    0.46174855922615804,
+    0.8870107303046115
+  ],
+  "maximum_lift_m": 0.0,
+  "peak_normal_force_n_per_finger": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "object_slip_detected": false,
+  "scene_sha256": "090e5bcf38d3349151f9138af1779cba6b69057200e4998f5bf957aecbf1d8da",
+  "checkpoint_sha256": "2e0e781757ac2eeb6a56542493296c30ce949a5f38e490628ae31cf043f82f6d",
+  "independent_test_eligible": false,
+  "independent_test_eligibility_reason": "no governed training manifest supplied"
+}

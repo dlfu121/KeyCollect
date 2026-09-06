@@ -1,0 +1,45 @@
+{
+  "status": "passed_integrity_checks",
+  "dataset": "/home/ee304/dongziyue/KeyCollect/data/rm65_dexhand_merged",
+  "metadata_total_episodes": 127,
+  "metadata_total_frames": 39673,
+  "audited_episode_rows": 127,
+  "audited_frame_rows": 39673,
+  "fps": 30,
+  "action_lengths": [
+    26
+  ],
+  "state_lengths": [
+    39
+  ],
+  "frame_parquet_sha256": "f17350216616c6273633f8629bbecacb472ed134b18b769d2be9a0df7e8e0bed",
+  "episode_parquet_sha256": "cb24d87fc11bead19e8f54304d6bba8731bdf9f30686b317a6021b90afcafcea",
+  "current_generated_scene": "assets/scenes/rm65_dexhand_scene.xml",
+  "current_generated_scene_sha256": "090e5bcf38d3349151f9138af1779cba6b69057200e4998f5bf957aecbf1d8da",
+  "integrity_errors": [],
+  "governance_missing_for_all_legacy_episodes": [
+    "success",
+    "failure_reason",
+    "object_initial_pose",
+    "scene_config",
+    "scene_sha256",
+    "random_seed",
+    "collection_batch",
+    "source_time",
+    "receive_time",
+    "observation_time",
+    "action_execution_time"
+  ],
+  "governance_sidecar": "UNAVAILABLE_NOT_RECORDED",
+  "governance_rows": 0,
+  "timing_sidecar": "UNAVAILABLE_NOT_RECORDED",
+  "existing_dataset_declared_splits": {
+    "train": "0:127"
+  },
+  "governed_split": {
+    "train": 101,
+    "validation": 12,
+    "test": 14
+  },
+  "existing_40k_checkpoint_independent_test_eligible": false
+}

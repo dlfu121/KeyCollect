@@ -1,0 +1,591 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco model="ariac_2025_lab">
+  <compiler angle="radian" meshdir="." balanceinertia="true" />
+  <option timestep=".001" gravity="0 0 -9.81" integrator="implicitfast" />
+  <visual>
+    <global offwidth="1920" offheight="1080" azimuth="135" elevation="-28" />
+    <quality shadowsize="4096" offsamples="4" />
+  </visual>
+  <asset>
+    <texture name="sky" type="skybox" builtin="gradient" rgb1=".55 .68 .82" rgb2=".08 .11 .16" width="1024" height="1024" />
+    <mesh name="mesh_000_floor_floor_visual_floor_visual_00" file="assets/meshes/mesh_000_floor_floor_visual_floor_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_000_floor_floor_visual_floor_visual_01" file="assets/meshes/mesh_000_floor_floor_visual_floor_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_000_floor_floor_visual_floor_visual_02" file="assets/meshes/mesh_000_floor_floor_visual_floor_visual_02.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_000_floor_floor_visual_floor_visual_03" file="assets/meshes/mesh_000_floor_floor_visual_floor_visual_03.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_000_floor_floor_visual_floor_visual_04" file="assets/meshes/mesh_000_floor_floor_visual_floor_visual_04.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_000_floor_floor_visual_floor_visual_05" file="assets/meshes/mesh_000_floor_floor_visual_floor_visual_05.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_000_floor_floor_visual_floor_visual_06" file="assets/meshes/mesh_000_floor_floor_visual_floor_visual_06.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_001_inspection_conveyor_conveyor_base_visual_base_visual_00" file="assets/meshes/mesh_001_inspection_conveyor_conveyor_base_visual_base_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_001_inspection_conveyor_conveyor_base_visual_base_visual_01" file="assets/meshes/mesh_001_inspection_conveyor_conveyor_base_visual_base_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_002_inspection_conveyor_inspection_door_visual_visual_00" file="assets/meshes/mesh_002_inspection_conveyor_inspection_door_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_00" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_01" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_02" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_02.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_03" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_03.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_04" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_04.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_05" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_05.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_06" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_06.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_07" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_07.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_08" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_08.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_09" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_09.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_10" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_10.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_11" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_11.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_12" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_12.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_13" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_13.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_14" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_14.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_15" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_15.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_16" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_16.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_17" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_17.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_18" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_18.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_19" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_19.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_20" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_20.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_21" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_21.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_22" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_22.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_23" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_23.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_003_inspection_1_robot_stand_stand_visual_visual_24" file="assets/meshes/mesh_003_inspection_1_robot_stand_stand_visual_visual_24.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_004_voltage_testing_stand_stand_visual_visual_00" file="assets/meshes/mesh_004_voltage_testing_stand_stand_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_004_voltage_testing_stand_stand_visual_visual_01" file="assets/meshes/mesh_004_voltage_testing_stand_stand_visual_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_005_inspection_bin_bin_link_visual_visual_00" file="assets/meshes/mesh_005_inspection_bin_bin_link_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_006_recycling_bin_bin_link_visual_visual_00" file="assets/meshes/mesh_006_recycling_bin_bin_link_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_007_voltage_tester_1_voltage_tester_visual_visual_00" file="assets/meshes/mesh_007_voltage_tester_1_voltage_tester_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_007_voltage_tester_1_voltage_tester_visual_visual_01" file="assets/meshes/mesh_007_voltage_tester_1_voltage_tester_visual_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_008_agv1_base_link_visual_visual_00" file="assets/meshes/mesh_008_agv1_base_link_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_008_agv1_base_link_visual_visual_01" file="assets/meshes/mesh_008_agv1_base_link_visual_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_008_agv1_base_link_visual_visual_02" file="assets/meshes/mesh_008_agv1_base_link_visual_visual_02.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_008_agv1_base_link_visual_visual_03" file="assets/meshes/mesh_008_agv1_base_link_visual_visual_03.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_008_agv1_base_link_visual_visual_04" file="assets/meshes/mesh_008_agv1_base_link_visual_visual_04.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_009_assembly_table_stand_visual_visual_00" file="assets/meshes/mesh_009_assembly_table_stand_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_009_assembly_table_stand_visual_visual_01" file="assets/meshes/mesh_009_assembly_table_stand_visual_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_010_tool_holder_tool_holder_link_visual_visual_00" file="assets/meshes/mesh_010_tool_holder_tool_holder_link_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_010_tool_holder_tool_holder_link_visual_visual_01" file="assets/meshes/mesh_010_tool_holder_tool_holder_link_visual_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_010_tool_holder_tool_holder_link_visual_visual_02" file="assets/meshes/mesh_010_tool_holder_tool_holder_link_visual_visual_02.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_010_tool_holder_tool_holder_link_visual_visual_03" file="assets/meshes/mesh_010_tool_holder_tool_holder_link_visual_visual_03.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_010_tool_holder_tool_holder_link_visual_visual_04" file="assets/meshes/mesh_010_tool_holder_tool_holder_link_visual_visual_04.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_011_tool_holder_tool_holder_link_collision_collision_00" file="assets/meshes/mesh_011_tool_holder_tool_holder_link_collision_collision_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_012_vg_2_base_link_visual_visual_00" file="assets/meshes/mesh_012_vg_2_base_link_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_012_vg_2_base_link_visual_visual_01" file="assets/meshes/mesh_012_vg_2_base_link_visual_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_012_vg_2_base_link_visual_visual_02" file="assets/meshes/mesh_012_vg_2_base_link_visual_visual_02.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_012_vg_2_base_link_visual_visual_03" file="assets/meshes/mesh_012_vg_2_base_link_visual_visual_03.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_012_vg_2_base_link_visual_visual_04" file="assets/meshes/mesh_012_vg_2_base_link_visual_visual_04.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_012_vg_2_base_link_visual_visual_05" file="assets/meshes/mesh_012_vg_2_base_link_visual_visual_05.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_013_vg_2_base_link_collision_collision_00" file="assets/meshes/mesh_013_vg_2_base_link_collision_collision_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_014_vg_4_base_link_visual_visual_00" file="assets/meshes/mesh_014_vg_4_base_link_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_014_vg_4_base_link_visual_visual_01" file="assets/meshes/mesh_014_vg_4_base_link_visual_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_014_vg_4_base_link_visual_visual_02" file="assets/meshes/mesh_014_vg_4_base_link_visual_visual_02.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_014_vg_4_base_link_visual_visual_03" file="assets/meshes/mesh_014_vg_4_base_link_visual_visual_03.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_014_vg_4_base_link_visual_visual_04" file="assets/meshes/mesh_014_vg_4_base_link_visual_visual_04.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_014_vg_4_base_link_visual_visual_05" file="assets/meshes/mesh_014_vg_4_base_link_visual_visual_05.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_015_vg_4_base_link_collision_collision_00" file="assets/meshes/mesh_015_vg_4_base_link_collision_collision_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_016_assembly_conveyor_base_visual_base_visual_00" file="assets/meshes/mesh_016_assembly_conveyor_base_visual_base_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_016_assembly_conveyor_base_visual_base_visual_01" file="assets/meshes/mesh_016_assembly_conveyor_base_visual_base_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_016_assembly_conveyor_base_visual_base_visual_02" file="assets/meshes/mesh_016_assembly_conveyor_base_visual_base_visual_02.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_017_assembly_conveyor_base_collision_base_collision_00" file="assets/meshes/mesh_017_assembly_conveyor_base_collision_base_collision_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_00" file="assets/meshes/mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_01" file="assets/meshes/mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_02" file="assets/meshes/mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_02.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_03" file="assets/meshes/mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_03.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_019_boxes_link_0_visual_visual_00" file="assets/meshes/mesh_019_boxes_link_0_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_020_walls_base_link_visual_visual_00" file="assets/meshes/mesh_020_walls_base_link_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_020_walls_base_link_visual_visual_01" file="assets/meshes/mesh_020_walls_base_link_visual_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_020_walls_base_link_visual_visual_02" file="assets/meshes/mesh_020_walls_base_link_visual_visual_02.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_020_walls_base_link_visual_visual_03" file="assets/meshes/mesh_020_walls_base_link_visual_visual_03.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_020_walls_base_link_visual_visual_04" file="assets/meshes/mesh_020_walls_base_link_visual_visual_04.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_020_walls_base_link_visual_visual_05" file="assets/meshes/mesh_020_walls_base_link_visual_visual_05.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_020_walls_base_link_visual_visual_06" file="assets/meshes/mesh_020_walls_base_link_visual_visual_06.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_021_trolly_box_1_body_visual_visual_00" file="assets/meshes/mesh_021_trolly_box_1_body_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_021_trolly_box_1_body_visual_visual_01" file="assets/meshes/mesh_021_trolly_box_1_body_visual_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_021_trolly_box_1_body_visual_visual_02" file="assets/meshes/mesh_021_trolly_box_1_body_visual_visual_02.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_021_trolly_box_1_body_visual_visual_03" file="assets/meshes/mesh_021_trolly_box_1_body_visual_visual_03.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_022_trolly_box_1_body_collision_collision_00" file="assets/meshes/mesh_022_trolly_box_1_body_collision_collision_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_023_kit_shelves_base_link_visual_visual_00" file="assets/meshes/mesh_023_kit_shelves_base_link_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_023_kit_shelves_base_link_visual_visual_01" file="assets/meshes/mesh_023_kit_shelves_base_link_visual_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_024_high_priority_kit_shelves_base_link_visual_visual_00" file="assets/meshes/mesh_024_high_priority_kit_shelves_base_link_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_024_high_priority_kit_shelves_base_link_visual_visual_01" file="assets/meshes/mesh_024_high_priority_kit_shelves_base_link_visual_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_025_module_shelves_base_link_visual_visual_00" file="assets/meshes/mesh_025_module_shelves_base_link_visual_visual_00.obj" inertia="shell" scale="2 2 2" />
+    <mesh name="mesh_025_module_shelves_base_link_visual_visual_01" file="assets/meshes/mesh_025_module_shelves_base_link_visual_visual_01.obj" inertia="shell" scale="2 2 2" />
+    <material name="shelf" rgba="0.80 0.82 0.85 1" reflectance="0.1"/>
+    <material name="metal" rgba="0.55 0.57 0.60 1" reflectance="0.35"/>
+  </asset>
+  <default>
+    <default class="cabinet">
+      <geom condim="3" friction="0.9 0.05 0.005" solref="0.008 1"/>
+    </default>
+  </default>
+  <worldbody>
+    <light name="sun" pos="8 8 24" dir="-.5 .1 -.9" directional="true" diffuse=".8 .8 .8" specular=".2 .2 .2" castshadow="true" />
+    <light name="fill" pos="8 8 14" dir="0 0 -1" diffuse=".35 .35 .38" />
+    <body name="floor" pos="0 0 0" quat="1 0 0 0">
+      <body name="floor_floor" pos="0 0 0" quat="1 0 0 0">
+        <geom name="floor_floor_visual_floor_visual_0" pos="0 0 0" quat="0.707388269 0 0 -0.706825181" group="1" contype="0" conaffinity="0" rgba="0.38 0.41 0.43 1" type="mesh" mesh="mesh_000_floor_floor_visual_floor_visual_00" />
+        <geom name="floor_floor_visual_floor_visual_1" pos="0 0 0" quat="0.707388269 0 0 -0.706825181" group="1" contype="0" conaffinity="0" rgba="0.38 0.41 0.43 1" type="mesh" mesh="mesh_000_floor_floor_visual_floor_visual_01" />
+        <geom name="floor_floor_visual_floor_visual_2" pos="0 0 0" quat="0.707388269 0 0 -0.706825181" group="1" contype="0" conaffinity="0" rgba="0.38 0.41 0.43 1" type="mesh" mesh="mesh_000_floor_floor_visual_floor_visual_02" />
+        <geom name="floor_floor_visual_floor_visual_3" pos="0 0 0" quat="0.707388269 0 0 -0.706825181" group="1" contype="0" conaffinity="0" rgba="0.38 0.41 0.43 1" type="mesh" mesh="mesh_000_floor_floor_visual_floor_visual_03" />
+        <geom name="floor_floor_visual_floor_visual_4" pos="0 0 0" quat="0.707388269 0 0 -0.706825181" group="1" contype="0" conaffinity="0" rgba="0.38 0.41 0.43 1" type="mesh" mesh="mesh_000_floor_floor_visual_floor_visual_04" />
+        <geom name="floor_floor_visual_floor_visual_5" pos="0 0 0" quat="0.707388269 0 0 -0.706825181" group="1" contype="0" conaffinity="0" rgba="0.38 0.41 0.43 1" type="mesh" mesh="mesh_000_floor_floor_visual_floor_visual_05" />
+        <geom name="floor_floor_visual_floor_visual_6" pos="0 0 0" quat="0.707388269 0 0 -0.706825181" group="1" contype="0" conaffinity="0" rgba="0.38 0.41 0.43 1" type="mesh" mesh="mesh_000_floor_floor_visual_floor_visual_06" />
+        <geom name="floor_floor_collision_collision" pos="8 8 -0.1" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="8 8 0.1" />
+      </body>
+    </body>
+    <body name="inspection_conveyor" pos="2 2 0.002" quat="1 0 0 0">
+      <body name="inspection_conveyor_conveyor_base" pos="0 0 0" quat="1 0 0 0">
+        <geom name="inspection_conveyor_conveyor_base_visual_base_visual_0" pos="-1 -0.1 0.84" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.3 0.33 0.36 1" type="mesh" mesh="mesh_001_inspection_conveyor_conveyor_base_visual_base_visual_00" />
+        <geom name="inspection_conveyor_conveyor_base_visual_base_visual_1" pos="-1 -0.1 0.84" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.3 0.33 0.36 1" type="mesh" mesh="mesh_001_inspection_conveyor_conveyor_base_visual_base_visual_01" />
+        <geom name="inspection_conveyor_conveyor_base_collision_base_collision" pos="0 0 0.4" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="1 0.1 0.4" />
+      </body>
+      <body name="inspection_conveyor_conveyor_belt" pos="0 0 0.842" quat="1 0 0 0">
+        <geom name="inspection_conveyor_conveyor_belt_collision_belt_collision" pos="0 0 -0.02" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="1 0.1 0.02" />
+      </body>
+      <body name="inspection_conveyor_inspection_door" pos="0.1 0 0.85" quat="0.923955699 0 0 -0.382499497">
+        <geom name="inspection_conveyor_inspection_door_visual_visual_0" pos="0 0 0.08" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.3 0.33 0.36 1" type="mesh" mesh="mesh_002_inspection_conveyor_inspection_door_visual_visual_00" />
+        <geom name="inspection_conveyor_inspection_door_collision_collision" pos="0 0 0.08" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.01 0.125 0.08" />
+      </body>
+      <body name="inspection_conveyor_inspection_door_belt" pos="-0.012 0 0" quat="1 0 0 0">
+        <geom name="inspection_conveyor_inspection_door_belt_collision_collision" pos="0 0 0.08" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.002 0.125 0.08" />
+      </body>
+      <body name="inspection_conveyor_cell_feed_link" pos="-0.9 0 0.842" quat="1 0 0 0" />
+    </body>
+    <body name="inspection_1_robot_stand" pos="3.2 1.2 0" quat="1 0 0 0">
+      <body name="inspection_1_robot_stand_stand" pos="0 0 0" quat="1 0 0 0">
+        <geom name="inspection_1_robot_stand_stand_visual_visual_0" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_00" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_1" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_01" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_2" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_02" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_3" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_03" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_4" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_04" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_5" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_05" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_6" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_06" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_7" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_07" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_8" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_08" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_9" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_09" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_10" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_10" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_11" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_11" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_12" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_12" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_13" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_13" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_14" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_14" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_15" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_15" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_16" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_16" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_17" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_17" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_18" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_18" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_19" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_19" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_20" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_20" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_21" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_21" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_22" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_22" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_23" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_23" />
+        <geom name="inspection_1_robot_stand_stand_visual_visual_24" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_24" />
+        <geom name="inspection_1_robot_stand_stand_collision_collision" pos="0 0 0.398" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.3 0.3 0.398" />
+      </body>
+    </body>
+    <body name="inspection_2_robot_stand" pos="5 2 0" quat="1 0 0 0">
+      <body name="inspection_2_robot_stand_stand" pos="0 0 0" quat="1 0 0 0">
+        <geom name="inspection_2_robot_stand_stand_visual_visual_0" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_00" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_1" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_01" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_2" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_02" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_3" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_03" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_4" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_04" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_5" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_05" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_6" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_06" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_7" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_07" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_8" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_08" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_9" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_09" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_10" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_10" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_11" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_11" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_12" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_12" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_13" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_13" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_14" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_14" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_15" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_15" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_16" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_16" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_17" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_17" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_18" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_18" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_19" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_19" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_20" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_20" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_21" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_21" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_22" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_22" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_23" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_23" />
+        <geom name="inspection_2_robot_stand_stand_visual_visual_24" pos="0 0 0" quat="0.707388269 -0.706825181 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_003_inspection_1_robot_stand_stand_visual_visual_24" />
+        <geom name="inspection_2_robot_stand_stand_collision_collision" pos="0 0 0.398" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.3 0.3 0.398" />
+      </body>
+    </body>
+    <body name="voltage_testing_stand" pos="4 1.6 0" quat="1 0 0 0">
+      <body name="voltage_testing_stand_stand" pos="0 0 0" quat="1 0 0 0">
+        <geom name="voltage_testing_stand_stand_visual_visual_0" pos="-0.1 0.3 0.8" quat="0.707388269 0 0 -0.706825181" group="1" contype="0" conaffinity="0" rgba="0.66 0.47 0.28 1" type="mesh" mesh="mesh_004_voltage_testing_stand_stand_visual_visual_00" />
+        <geom name="voltage_testing_stand_stand_visual_visual_1" pos="-0.1 0.3 0.8" quat="0.707388269 0 0 -0.706825181" group="1" contype="0" conaffinity="0" rgba="0.66 0.47 0.28 1" type="mesh" mesh="mesh_004_voltage_testing_stand_stand_visual_visual_01" />
+        <geom name="voltage_testing_stand_stand_collision_collision" pos="0 0 0.398" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.1 0.3 0.398" />
+      </body>
+    </body>
+    <body name="inspection_bin" pos="2.28 2.3 0.02" quat="0.707388269 0 0 0.706825181">
+      <body name="inspection_bin_bin_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="inspection_bin_bin_link_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.32 0.43 0.55 1" type="mesh" mesh="mesh_005_inspection_bin_bin_link_visual_visual_00" />
+        <geom name="inspection_bin_bin_link_collision_collision" pos="0 0 0.1" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.15 0.25 0.01" />
+      </body>
+    </body>
+    <body name="inspection_conveyor_bin" pos="3.2 2 0.02" quat="1 0 0 0">
+      <body name="inspection_conveyor_bin_bin_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="inspection_conveyor_bin_bin_link_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.32 0.43 0.55 1" type="mesh" mesh="mesh_005_inspection_bin_bin_link_visual_visual_00" />
+        <geom name="inspection_conveyor_bin_bin_link_collision_collision" pos="0 0 0.1" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.15 0.25 0.01" />
+      </body>
+    </body>
+    <body name="recycling_bin" pos="5 1.2 0.02" quat="0.707388269 0 0 0.706825181">
+      <body name="recycling_bin_bin_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="recycling_bin_bin_link_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.3 0.49 0.42 1" type="mesh" mesh="mesh_006_recycling_bin_bin_link_visual_visual_00" />
+        <geom name="recycling_bin_bin_link_collision_collision_0" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_006_recycling_bin_bin_link_visual_visual_00" />
+      </body>
+    </body>
+    <body name="voltage_tester_1" pos="4 1.75 0.87" quat="0.707388269 0 0 0.706825181">
+      <body name="voltage_tester_1_voltage_tester" pos="0 0 0" quat="1 0 0 0">
+        <geom name="voltage_tester_1_voltage_tester_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.66 0.47 0.28 1" type="mesh" mesh="mesh_007_voltage_tester_1_voltage_tester_visual_visual_00" />
+        <geom name="voltage_tester_1_voltage_tester_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.66 0.47 0.28 1" type="mesh" mesh="mesh_007_voltage_tester_1_voltage_tester_visual_visual_01" />
+        <geom name="voltage_tester_1_voltage_tester_collision_collision_0" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_007_voltage_tester_1_voltage_tester_visual_visual_00" />
+        <geom name="voltage_tester_1_voltage_tester_collision_collision_1" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_007_voltage_tester_1_voltage_tester_visual_visual_01" />
+      </body>
+    </body>
+    <body name="voltage_tester_2" pos="4 1.45 0.87" quat="0.707388269 0 0 0.706825181">
+      <body name="voltage_tester_2_voltage_tester" pos="0 0 0" quat="1 0 0 0">
+        <geom name="voltage_tester_2_voltage_tester_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.66 0.47 0.28 1" type="mesh" mesh="mesh_007_voltage_tester_1_voltage_tester_visual_visual_00" />
+        <geom name="voltage_tester_2_voltage_tester_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.66 0.47 0.28 1" type="mesh" mesh="mesh_007_voltage_tester_1_voltage_tester_visual_visual_01" />
+        <geom name="voltage_tester_2_voltage_tester_collision_collision_0" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_007_voltage_tester_1_voltage_tester_visual_visual_00" />
+        <geom name="voltage_tester_2_voltage_tester_collision_collision_1" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_007_voltage_tester_1_voltage_tester_visual_visual_01" />
+      </body>
+    </body>
+    <body name="agv1" pos="4.3 3 0.01" quat="0.707388269 0 0 0.706825181">
+      <body name="agv1_base_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="agv1_base_link_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_00" />
+        <geom name="agv1_base_link_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_01" />
+        <geom name="agv1_base_link_visual_visual_2" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_02" />
+        <geom name="agv1_base_link_visual_visual_3" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_03" />
+        <geom name="agv1_base_link_visual_visual_4" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_04" />
+        <geom name="agv1_base_link_collision_collision" pos="0 0 0.35" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.5 0.25 0.35" />
+      </body>
+      <body name="agv1_tray_link" pos="0 0 0.7" quat="0.707388269 0 0 -0.706825181" />
+      <body name="agv1_center_slot_link" pos="0 0 0.019" quat="1 0 0 0" />
+      <body name="agv1_slot_1_link" pos="-0.13 0.1 0.064" quat="1 0 0 0" />
+      <body name="agv1_slot_2_link" pos="0.13 0.1 0.064" quat="1 0 0 0" />
+      <body name="agv1_slot_3_link" pos="-0.13 -0.1 0.064" quat="1 0 0 0" />
+      <body name="agv1_slot_4_link" pos="0.13 -0.1 0.064" quat="1 0 0 0" />
+    </body>
+    <body name="agv2" pos="5 3 0.01" quat="0.707388269 0 0 0.706825181">
+      <body name="agv2_base_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="agv2_base_link_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_00" />
+        <geom name="agv2_base_link_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_01" />
+        <geom name="agv2_base_link_visual_visual_2" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_02" />
+        <geom name="agv2_base_link_visual_visual_3" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_03" />
+        <geom name="agv2_base_link_visual_visual_4" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_04" />
+        <geom name="agv2_base_link_collision_collision" pos="0 0 0.35" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.5 0.25 0.35" />
+      </body>
+      <body name="agv2_tray_link" pos="0 0 0.7" quat="0.707388269 0 0 -0.706825181" />
+      <body name="agv2_center_slot_link" pos="0 0 0.019" quat="1 0 0 0" />
+      <body name="agv2_slot_1_link" pos="-0.13 0.1 0.064" quat="1 0 0 0" />
+      <body name="agv2_slot_2_link" pos="0.13 0.1 0.064" quat="1 0 0 0" />
+      <body name="agv2_slot_3_link" pos="-0.13 -0.1 0.064" quat="1 0 0 0" />
+      <body name="agv2_slot_4_link" pos="0.13 -0.1 0.064" quat="1 0 0 0" />
+    </body>
+    <body name="agv3" pos="5.7 3 0.01" quat="0.707388269 0 0 0.706825181">
+      <body name="agv3_base_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="agv3_base_link_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_00" />
+        <geom name="agv3_base_link_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_01" />
+        <geom name="agv3_base_link_visual_visual_2" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_02" />
+        <geom name="agv3_base_link_visual_visual_3" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_03" />
+        <geom name="agv3_base_link_visual_visual_4" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.27 0.48 0.5 1" type="mesh" mesh="mesh_008_agv1_base_link_visual_visual_04" />
+        <geom name="agv3_base_link_collision_collision" pos="0 0 0.35" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.5 0.25 0.35" />
+      </body>
+      <body name="agv3_tray_link" pos="0 0 0.7" quat="0.707388269 0 0 -0.706825181" />
+      <body name="agv3_center_slot_link" pos="0 0 0.019" quat="1 0 0 0" />
+      <body name="agv3_slot_1_link" pos="-0.13 0.1 0.064" quat="1 0 0 0" />
+      <body name="agv3_slot_2_link" pos="0.13 0.1 0.064" quat="1 0 0 0" />
+      <body name="agv3_slot_3_link" pos="-0.13 -0.1 0.064" quat="1 0 0 0" />
+      <body name="agv3_slot_4_link" pos="0.13 -0.1 0.064" quat="1 0 0 0" />
+    </body>
+    <body name="assembly_table" pos="7.4 10.4 0" quat="1 0 0 0">
+      <body name="assembly_table_stand" pos="0 0 0" quat="1 0 0 0">
+        <geom name="assembly_table_stand_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_009_assembly_table_stand_visual_visual_00" />
+        <geom name="assembly_table_stand_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.47 0.51 0.54 1" type="mesh" mesh="mesh_009_assembly_table_stand_visual_visual_01" />
+        <geom name="assembly_table_stand_collision_collision" pos="0 0 0.43" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.6 0.4 0.43" />
+      </body>
+    </body>
+    <body name="tool_holder" pos="7.2 10.4 0.86" quat="0.000796326711 0 0 0.999999683">
+      <body name="tool_holder_tool_holder_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="tool_holder_tool_holder_link_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.66 0.47 0.28 1" type="mesh" mesh="mesh_010_tool_holder_tool_holder_link_visual_visual_00" />
+        <geom name="tool_holder_tool_holder_link_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.66 0.47 0.28 1" type="mesh" mesh="mesh_010_tool_holder_tool_holder_link_visual_visual_01" />
+        <geom name="tool_holder_tool_holder_link_visual_visual_2" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.66 0.47 0.28 1" type="mesh" mesh="mesh_010_tool_holder_tool_holder_link_visual_visual_02" />
+        <geom name="tool_holder_tool_holder_link_visual_visual_3" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.66 0.47 0.28 1" type="mesh" mesh="mesh_010_tool_holder_tool_holder_link_visual_visual_03" />
+        <geom name="tool_holder_tool_holder_link_visual_visual_4" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.66 0.47 0.28 1" type="mesh" mesh="mesh_010_tool_holder_tool_holder_link_visual_visual_04" />
+        <geom name="tool_holder_tool_holder_link_collision_collision_0" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_011_tool_holder_tool_holder_link_collision_collision_00" />
+      </body>
+      <body name="tool_holder_vg_2_slot" pos="0.16 -0.135 0.32874" quat="0.000796326711 0.999999683 0 0" />
+      <body name="tool_holder_vg_4_slot" pos="-0.16 -0.135 0.32874" quat="0.000796326711 0.999999683 0 0" />
+    </body>
+    <body name="vg_2" pos="7.04 10.535 1.19874" quat="1 0 0 0">
+      <body name="vg_2_base_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="vg_2_base_link_visual_visual_0" pos="0 0 -0.12" quat="0.000563312174 0.707388045 -0.706824957 -0.000562863772" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_012_vg_2_base_link_visual_visual_00" />
+        <geom name="vg_2_base_link_visual_visual_1" pos="0 0 -0.12" quat="0.000563312174 0.707388045 -0.706824957 -0.000562863772" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_012_vg_2_base_link_visual_visual_01" />
+        <geom name="vg_2_base_link_visual_visual_2" pos="0 0 -0.12" quat="0.000563312174 0.707388045 -0.706824957 -0.000562863772" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_012_vg_2_base_link_visual_visual_02" />
+        <geom name="vg_2_base_link_visual_visual_3" pos="0 0 -0.12" quat="0.000563312174 0.707388045 -0.706824957 -0.000562863772" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_012_vg_2_base_link_visual_visual_03" />
+        <geom name="vg_2_base_link_visual_visual_4" pos="0 0 -0.12" quat="0.000563312174 0.707388045 -0.706824957 -0.000562863772" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_012_vg_2_base_link_visual_visual_04" />
+        <geom name="vg_2_base_link_visual_visual_5" pos="0 0 -0.12" quat="0.000563312174 0.707388045 -0.706824957 -0.000562863772" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_012_vg_2_base_link_visual_visual_05" />
+        <geom name="vg_2_base_link_collision_collision_0" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_013_vg_2_base_link_collision_collision_00" />
+      </body>
+      <body name="vg_2_antistick_link1" pos="0.05 0 -0.1261" quat="1 0 0 0">
+        <geom name="vg_2_antistick_link1_collision_collision" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.01 0.01 0.001" />
+      </body>
+      <body name="vg_2_antistick_link2" pos="-0.05 0 -0.1261" quat="1 0 0 0">
+        <geom name="vg_2_antistick_link2_collision_collision" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.01 0.01 0.001" />
+      </body>
+      <body name="vg_2_contact_link" pos="0 0 -0.0101" quat="1 0 0 0">
+        <geom name="vg_2_contact_link_collision_collision" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="cylinder" size="0.014 0.0001" />
+      </body>
+      <body name="vg_2_suction_1_link" pos="0.05 0 -0.132" quat="1 0 0 0">
+        <geom name="vg_2_suction_1_link_collision_collision" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="cylinder" size="0.017 0.002" />
+      </body>
+      <body name="vg_2_suction_2_link" pos="-0.05 0 -0.132" quat="1 0 0 0">
+        <geom name="vg_2_suction_2_link_collision_collision" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="cylinder" size="0.017 0.002" />
+      </body>
+    </body>
+    <body name="vg_4" pos="7.36 10.535 1.19874" quat="1 0 0 0">
+      <body name="vg_4_base_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="vg_4_base_link_visual_visual_0" pos="0 0 -0.12" quat="0.000563312174 0.707388045 -0.706824957 -0.000562863772" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_014_vg_4_base_link_visual_visual_00" />
+        <geom name="vg_4_base_link_visual_visual_1" pos="0 0 -0.12" quat="0.000563312174 0.707388045 -0.706824957 -0.000562863772" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_014_vg_4_base_link_visual_visual_01" />
+        <geom name="vg_4_base_link_visual_visual_2" pos="0 0 -0.12" quat="0.000563312174 0.707388045 -0.706824957 -0.000562863772" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_014_vg_4_base_link_visual_visual_02" />
+        <geom name="vg_4_base_link_visual_visual_3" pos="0 0 -0.12" quat="0.000563312174 0.707388045 -0.706824957 -0.000562863772" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_014_vg_4_base_link_visual_visual_03" />
+        <geom name="vg_4_base_link_visual_visual_4" pos="0 0 -0.12" quat="0.000563312174 0.707388045 -0.706824957 -0.000562863772" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_014_vg_4_base_link_visual_visual_04" />
+        <geom name="vg_4_base_link_visual_visual_5" pos="0 0 -0.12" quat="0.000563312174 0.707388045 -0.706824957 -0.000562863772" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_014_vg_4_base_link_visual_visual_05" />
+        <geom name="vg_4_base_link_collision_collision_0" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_015_vg_4_base_link_collision_collision_00" />
+      </body>
+      <body name="vg_4_contact_link" pos="0 0 -0.0101" quat="1 0 0 0">
+        <geom name="vg_4_contact_link_collision_collision" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="cylinder" size="0.014 0.0001" />
+      </body>
+      <body name="vg_4_suction_1_link" pos="0.05 0.05 -0.132" quat="1 0 0 0">
+        <geom name="vg_4_suction_1_link_collision_collision" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="cylinder" size="0.017 0.002" />
+      </body>
+      <body name="vg_4_suction_2_link" pos="-0.05 0.05 -0.132" quat="1 0 0 0">
+        <geom name="vg_4_suction_2_link_collision_collision" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="cylinder" size="0.017 0.002" />
+      </body>
+      <body name="vg_4_suction_3_link" pos="0.05 -0.05 -0.132" quat="1 0 0 0">
+        <geom name="vg_4_suction_3_link_collision_collision" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="cylinder" size="0.017 0.002" />
+      </body>
+      <body name="vg_4_suction_4_link" pos="-0.05 -0.05 -0.132" quat="1 0 0 0">
+        <geom name="vg_4_suction_4_link_collision_collision" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="cylinder" size="0.017 0.002" />
+      </body>
+    </body>
+    <body name="assembly_conveyor_bin" pos="8.4 10.71 0.02" quat="0.707388269 0 0 0.706825181">
+      <body name="assembly_conveyor_bin_bin_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="assembly_conveyor_bin_bin_link_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.32 0.43 0.55 1" type="mesh" mesh="mesh_005_inspection_bin_bin_link_visual_visual_00" />
+        <geom name="assembly_conveyor_bin_bin_link_collision_collision" pos="0 0 0.1" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.15 0.25 0.01" />
+      </body>
+    </body>
+    <body name="assembly_conveyor" pos="9.2 9.7 0.002" quat="0.707388269 0 0 0.706825181">
+      <body name="assembly_conveyor_base" pos="0 0 0" quat="1 0 0 0">
+        <geom name="assembly_conveyor_base_visual_base_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.3 0.33 0.36 1" type="mesh" mesh="mesh_016_assembly_conveyor_base_visual_base_visual_00" />
+        <geom name="assembly_conveyor_base_visual_base_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.3 0.33 0.36 1" type="mesh" mesh="mesh_016_assembly_conveyor_base_visual_base_visual_01" />
+        <geom name="assembly_conveyor_base_visual_base_visual_2" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.3 0.33 0.36 1" type="mesh" mesh="mesh_016_assembly_conveyor_base_visual_base_visual_02" />
+        <geom name="assembly_conveyor_base_collision_base_collision_0" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_017_assembly_conveyor_base_collision_base_collision_00" />
+      </body>
+      <body name="assembly_conveyor_section_1_belt" pos="0 0 0" quat="1 0 0 0">
+        <geom name="assembly_conveyor_section_1_belt_collision_section_1_belt" pos="0.6815 0 0.849" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.6815 0.2 0.001" />
+      </body>
+      <body name="assembly_conveyor_section_2_belt" pos="0 0 0" quat="1 0 0 0">
+        <geom name="assembly_conveyor_section_2_belt_collision_section_2_belt" pos="1.4 0.2 0.845" quat="0.707388269 0 0 0.706825181" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.4 0.2 0.001" />
+      </body>
+      <body name="assembly_conveyor_section_3_belt" pos="0 0 0" quat="1 0 0 0">
+        <geom name="assembly_conveyor_section_3_belt_collision_section_3_belt" pos="2.505 0.8 0.841" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="1.305 0.2 0.001" />
+      </body>
+      <body name="assembly_conveyor_module_submission_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="assembly_conveyor_module_submission_link_collision_module_submission" pos="3.91 0.8 0.84" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="box" size="0.1 0.1 0.001" />
+      </body>
+      <body name="assembly_conveyor_bottom_shell_insertion_link" pos="0.3 0 0.85" quat="1 0 0 0" />
+      <body name="assembly_conveyor_section_1_tf_link" pos="0 0 0.85" quat="1 0 0 0" />
+      <body name="assembly_conveyor_section_2_tf_link" pos="1.4 -0.2 0.846" quat="0.707034768 0 0 0.707178787" />
+      <body name="assembly_conveyor_section_3_tf_link" pos="1.2 0.8 0.842" quat="1 0 0 0" />
+    </body>
+    <body name="inspection_status_light" pos="0.95 2.15 0" quat="1 0 0 0">
+      <body name="inspection_status_light_base_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="inspection_status_light_base_link_visual_base_visual" pos="0 0 0.421" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.753 0.753 0.753 1" type="box" size="0.05 0.05 0.421" />
+        <geom name="inspection_status_light_base_link_visual_base_cylinder" pos="0 0 0.892" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.753 0.753 0.753 1" type="cylinder" size="0.04 0.05" />
+        <geom name="inspection_status_light_base_link_visual_red_light_visual" pos="0 0 0.962" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="1 0 0 0.9" type="cylinder" size="0.04 0.02" />
+        <geom name="inspection_status_light_base_link_visual_divider_1" pos="0 0 0.992" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.753 0.753 0.753 1" type="cylinder" size="0.04 0.01" />
+        <geom name="inspection_status_light_base_link_visual_purple_light_visual" pos="0 0 1.022" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.58 0 0.827 0.9" type="cylinder" size="0.04 0.02" />
+        <geom name="inspection_status_light_base_link_visual_divider_2" pos="0 0 1.052" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.753 0.753 0.753 1" type="cylinder" size="0.04 0.01" />
+        <geom name="inspection_status_light_base_link_visual_green_light_visual" pos="0 0 1.082" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0 1 0 0.9" type="cylinder" size="0.04 0.02" />
+        <geom name="inspection_status_light_base_link_visual_divider_3" pos="0 0 1.112" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.753 0.753 0.753 1" type="cylinder" size="0.04 0.01" />
+        <geom name="inspection_status_light_base_link_visual_blue_light_visual" pos="0 0 1.142" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0 0 1 0.9" type="cylinder" size="0.04 0.02" />
+        <geom name="inspection_status_light_base_link_visual_divider_4" pos="0 0 1.172" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.753 0.753 0.753 1" type="cylinder" size="0.04 0.01" />
+        <geom name="inspection_status_light_base_link_visual_yellow_light_visual" pos="0 0 1.202" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.8 0.8 0 0.9" type="cylinder" size="0.04 0.02" />
+        <geom name="inspection_status_light_base_link_visual_cap" pos="0 0 1.232" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.753 0.753 0.753 1" type="cylinder" size="0.04 0.01" />
+      </body>
+    </body>
+    <body name="assembly_status_light" pos="8.95 10.85 0" quat="1 0 0 0">
+      <body name="assembly_status_light_base_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="assembly_status_light_base_link_visual_base_visual" pos="0 0 0.421" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.753 0.753 0.753 1" type="box" size="0.05 0.05 0.421" />
+        <geom name="assembly_status_light_base_link_visual_base_cylinder" pos="0 0 0.892" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.753 0.753 0.753 1" type="cylinder" size="0.04 0.05" />
+        <geom name="assembly_status_light_base_link_visual_red_light_visual" pos="0 0 0.962" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="1 0 0 0.9" type="cylinder" size="0.04 0.02" />
+        <geom name="assembly_status_light_base_link_visual_divider_1" pos="0 0 0.992" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.753 0.753 0.753 1" type="cylinder" size="0.04 0.01" />
+        <geom name="assembly_status_light_base_link_visual_purple_light_visual" pos="0 0 1.022" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.58 0 0.827 0.9" type="cylinder" size="0.04 0.02" />
+        <geom name="assembly_status_light_base_link_visual_divider_2" pos="0 0 1.052" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.753 0.753 0.753 1" type="cylinder" size="0.04 0.01" />
+        <geom name="assembly_status_light_base_link_visual_green_light_visual" pos="0 0 1.082" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0 1 0 0.9" type="cylinder" size="0.04 0.02" />
+        <geom name="assembly_status_light_base_link_visual_divider_3" pos="0 0 1.112" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.753 0.753 0.753 1" type="cylinder" size="0.04 0.01" />
+        <geom name="assembly_status_light_base_link_visual_blue_light_visual" pos="0 0 1.142" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0 0 1 0.9" type="cylinder" size="0.04 0.02" />
+        <geom name="assembly_status_light_base_link_visual_divider_4" pos="0 0 1.172" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.753 0.753 0.753 1" type="cylinder" size="0.04 0.01" />
+        <geom name="assembly_status_light_base_link_visual_yellow_light_visual" pos="0 0 1.202" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.8 0.8 0 0.9" type="cylinder" size="0.04 0.02" />
+        <geom name="assembly_status_light_base_link_visual_cap" pos="0 0 1.232" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.753 0.753 0.753 1" type="cylinder" size="0.04 0.01" />
+      </body>
+    </body>
+    <body name="shelf_1" pos="15.1 4 0" quat="0.707388269 0 0 0.706825181">
+      <body name="shelf_1_shelf_base" pos="-1 0 0" quat="1 0 0 0">
+        <geom name="shelf_1_shelf_base_visual_shelf_chassi_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba=".68 .52 .26 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_00" />
+        <geom name="shelf_1_shelf_base_visual_shelf_chassi_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba=".68 .52 .26 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_01" />
+        <geom name="shelf_1_shelf_base_visual_shelf_chassi_visual_2" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.37 0.45 0.51 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_02" />
+        <geom name="shelf_1_shelf_base_visual_shelf_chassi_visual_3" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.37 0.45 0.51 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_03" />
+      </body>
+    </body>
+    <body name="shelf_2" pos="15.1 12 0" quat="0.707388269 0 0 -0.706825181">
+      <body name="shelf_2_shelf_base" pos="-1 0 0" quat="1 0 0 0">
+        <geom name="shelf_2_shelf_base_visual_shelf_chassi_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba=".68 .52 .26 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_00" />
+        <geom name="shelf_2_shelf_base_visual_shelf_chassi_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba=".68 .52 .26 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_01" />
+        <geom name="shelf_2_shelf_base_visual_shelf_chassi_visual_2" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.37 0.45 0.51 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_02" />
+        <geom name="shelf_2_shelf_base_visual_shelf_chassi_visual_3" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.37 0.45 0.51 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_03" />
+      </body>
+    </body>
+    <body name="shelf_3" pos="18.3 4 0" quat="0.707388269 0 0 -0.706825181">
+      <body name="shelf_3_shelf_base" pos="-1 0 0" quat="1 0 0 0">
+        <geom name="shelf_3_shelf_base_visual_shelf_chassi_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba=".68 .52 .26 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_00" />
+        <geom name="shelf_3_shelf_base_visual_shelf_chassi_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba=".68 .52 .26 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_01" />
+        <geom name="shelf_3_shelf_base_visual_shelf_chassi_visual_2" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.37 0.45 0.51 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_02" />
+        <geom name="shelf_3_shelf_base_visual_shelf_chassi_visual_3" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.37 0.45 0.51 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_03" />
+      </body>
+    </body>
+    <body name="boxes" pos="19 3.08 1.1" quat="0.980066578 0 0 -0.198669331">
+      <body name="boxes_link_0" pos="0 0 0" quat="1 0 0 0">
+        <geom name="boxes_link_0_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.68 0.52 0.26 1" type="mesh" mesh="mesh_019_boxes_link_0_visual_visual_00" />
+      </body>
+    </body>
+    <body name="shelf_4" pos="18.3 12 0" quat="0.707388269 0 0 0.706825181">
+      <body name="shelf_4_shelf_base" pos="-1 0 0" quat="1 0 0 0">
+        <geom name="shelf_4_shelf_base_visual_shelf_chassi_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba=".68 .52 .26 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_00" />
+        <geom name="shelf_4_shelf_base_visual_shelf_chassi_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba=".68 .52 .26 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_01" />
+        <geom name="shelf_4_shelf_base_visual_shelf_chassi_visual_2" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.37 0.45 0.51 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_02" />
+        <geom name="shelf_4_shelf_base_visual_shelf_chassi_visual_3" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.37 0.45 0.51 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_03" />
+      </body>
+    </body>
+    <body name="walls" pos="0 0 0" quat="1 0 0 0">
+      <body name="walls_base_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="walls_base_link_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.72 0.74 0.75 1" type="mesh" mesh="mesh_020_walls_base_link_visual_visual_00" />
+        <geom name="walls_base_link_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.72 0.74 0.75 1" type="mesh" mesh="mesh_020_walls_base_link_visual_visual_01" />
+        <geom name="walls_base_link_visual_visual_2" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.72 0.74 0.75 1" type="mesh" mesh="mesh_020_walls_base_link_visual_visual_02" />
+        <geom name="walls_base_link_visual_visual_3" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.72 0.74 0.75 1" type="mesh" mesh="mesh_020_walls_base_link_visual_visual_03" />
+        <geom name="walls_base_link_visual_visual_4" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.72 0.74 0.75 1" type="mesh" mesh="mesh_020_walls_base_link_visual_visual_04" />
+        <geom name="walls_base_link_visual_visual_5" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.72 0.74 0.75 1" type="mesh" mesh="mesh_020_walls_base_link_visual_visual_05" />
+        <geom name="walls_base_link_visual_visual_6" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.72 0.74 0.75 1" type="mesh" mesh="mesh_020_walls_base_link_visual_visual_06" />
+        <geom name="walls_base_link_collision_collision_0" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_020_walls_base_link_visual_visual_00" />
+        <geom name="walls_base_link_collision_collision_1" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_020_walls_base_link_visual_visual_01" />
+        <geom name="walls_base_link_collision_collision_2" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_020_walls_base_link_visual_visual_02" />
+        <geom name="walls_base_link_collision_collision_3" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_020_walls_base_link_visual_visual_03" />
+        <geom name="walls_base_link_collision_collision_4" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_020_walls_base_link_visual_visual_04" />
+        <geom name="walls_base_link_collision_collision_5" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_020_walls_base_link_visual_visual_05" />
+        <geom name="walls_base_link_collision_collision_6" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_020_walls_base_link_visual_visual_06" />
+      </body>
+    </body>
+    <body name="trolly_box_1" pos="-3.16 12.88 0" quat="0.707388269 0 0 0.706825181">
+      <body name="trolly_box_1_body" pos="0 0 0" quat="1 0 0 0">
+        <geom name="trolly_box_1_body_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.25 0.36 0.47 1" type="mesh" mesh="mesh_021_trolly_box_1_body_visual_visual_00" />
+        <geom name="trolly_box_1_body_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.25 0.36 0.47 1" type="mesh" mesh="mesh_021_trolly_box_1_body_visual_visual_01" />
+        <geom name="trolly_box_1_body_visual_visual_2" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.25 0.36 0.47 1" type="mesh" mesh="mesh_021_trolly_box_1_body_visual_visual_02" />
+        <geom name="trolly_box_1_body_visual_visual_3" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.25 0.36 0.47 1" type="mesh" mesh="mesh_021_trolly_box_1_body_visual_visual_03" />
+        <geom name="trolly_box_1_body_collision_collision_0" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_022_trolly_box_1_body_collision_collision_00" />
+      </body>
+    </body>
+    <body name="trolly_box_2" pos="14.6 0 0" quat="0.707388269 0 0 -0.706825181">
+      <body name="trolly_box_2_body" pos="0 0 0" quat="1 0 0 0">
+        <geom name="trolly_box_2_body_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.25 0.36 0.47 1" type="mesh" mesh="mesh_021_trolly_box_1_body_visual_visual_00" />
+        <geom name="trolly_box_2_body_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.25 0.36 0.47 1" type="mesh" mesh="mesh_021_trolly_box_1_body_visual_visual_01" />
+        <geom name="trolly_box_2_body_visual_visual_2" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.25 0.36 0.47 1" type="mesh" mesh="mesh_021_trolly_box_1_body_visual_visual_02" />
+        <geom name="trolly_box_2_body_visual_visual_3" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.25 0.36 0.47 1" type="mesh" mesh="mesh_021_trolly_box_1_body_visual_visual_03" />
+        <geom name="trolly_box_2_body_collision_collision_0" pos="0 0 0" quat="1 0 0 0" group="3" contype="1" conaffinity="1" rgba=".2 .5 .9 0" friction=".8 .02 .002" type="mesh" mesh="mesh_022_trolly_box_1_body_collision_collision_00" />
+      </body>
+    </body>
+    <body name="kit_shelves" pos="14.6 5 0" quat="0.707388269 0 0 -0.706825181">
+      <body name="kit_shelves_base_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="kit_shelves_base_link_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_023_kit_shelves_base_link_visual_visual_00" />
+        <geom name="kit_shelves_base_link_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_023_kit_shelves_base_link_visual_visual_01" />
+      </body>
+    </body>
+    <body name="high_priority_kit_shelves" pos="14.6 2.6 0" quat="0.707388269 0 0 -0.706825181">
+      <body name="high_priority_kit_shelves_base_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="high_priority_kit_shelves_base_link_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_024_high_priority_kit_shelves_base_link_visual_visual_00" />
+        <geom name="high_priority_kit_shelves_base_link_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_024_high_priority_kit_shelves_base_link_visual_visual_01" />
+      </body>
+    </body>
+    <body name="recycled_kit_shelves" pos="2 14.6 0" quat="1 0 0 0">
+      <body name="recycled_kit_shelves_base_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="recycled_kit_shelves_base_link_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_023_kit_shelves_base_link_visual_visual_00" />
+        <geom name="recycled_kit_shelves_base_link_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_023_kit_shelves_base_link_visual_visual_01" />
+      </body>
+    </body>
+    <body name="module_shelves" pos="8.4 16.6 0" quat="1 0 0 0">
+      <body name="module_shelves_base_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="module_shelves_base_link_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_025_module_shelves_base_link_visual_visual_00" />
+        <geom name="module_shelves_base_link_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_025_module_shelves_base_link_visual_visual_01" />
+      </body>
+    </body>
+    <body name="recycled_module_shelves" pos="-0.86 14.6 0" quat="1 0 0 0">
+      <body name="recycled_module_shelves_base_link" pos="0 0 0" quat="1 0 0 0">
+        <geom name="recycled_module_shelves_base_link_visual_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_025_module_shelves_base_link_visual_visual_00" />
+        <geom name="recycled_module_shelves_base_link_visual_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.58 0.62 0.65 1" type="mesh" mesh="mesh_025_module_shelves_base_link_visual_visual_01" />
+      </body>
+    </body>
+    <body name="shelf_5" pos="21.5 4 0" quat="0.707388269 0 0 0.706825181">
+      <body name="shelf_5_shelf_base" pos="-1 0 0" quat="1 0 0 0">
+        <geom name="shelf_5_shelf_base_visual_shelf_chassi_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba=".68 .52 .26 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_00" />
+        <geom name="shelf_5_shelf_base_visual_shelf_chassi_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba=".68 .52 .26 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_01" />
+        <geom name="shelf_5_shelf_base_visual_shelf_chassi_visual_2" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.37 0.45 0.51 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_02" />
+        <geom name="shelf_5_shelf_base_visual_shelf_chassi_visual_3" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.37 0.45 0.51 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_03" />
+      </body>
+    </body>
+    <body name="shelf_6" pos="21.5 12 0" quat="0.707388269 0 0 -0.706825181">
+      <body name="shelf_6_shelf_base" pos="-1 0 0" quat="1 0 0 0">
+        <geom name="shelf_6_shelf_base_visual_shelf_chassi_visual_0" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba=".68 .52 .26 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_00" />
+        <geom name="shelf_6_shelf_base_visual_shelf_chassi_visual_1" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba=".68 .52 .26 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_01" />
+        <geom name="shelf_6_shelf_base_visual_shelf_chassi_visual_2" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.37 0.45 0.51 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_02" />
+        <geom name="shelf_6_shelf_base_visual_shelf_chassi_visual_3" pos="0 0 0" quat="1 0 0 0" group="1" contype="0" conaffinity="0" rgba="0.37 0.45 0.51 1" type="mesh" mesh="mesh_018_shelf_1_shelf_base_visual_shelf_chassi_visual_03" />
+      </body>
+    </body>
+    <!-- ================= 柜子（双开门（铰链可开闭） + 三层挡板） ================= -->
+    <!-- 柜宽 1.6(半0.8) 深 0.6(半0.3) 高 1.9；置于原点，正面朝 +y -->
+    <body name="cabinet" pos="7 20.24 0" euler="0 0 0">
+      <!-- 柜体外壳 -->
+      <geom class="cabinet" type="box" pos="0 0 0.03"   size="0.8 0.3 0.03" material="shelf"/>  <!-- 底板 -->
+      <geom class="cabinet" type="box" pos="0 0 1.87"   size="0.8 0.3 0.03" material="shelf"/>  <!-- 顶板 -->
+      <geom class="cabinet" type="box" pos="0 -0.29 0.95" size="0.8 0.02 0.95" material="shelf"/> <!-- 背板 -->
+      <geom class="cabinet" type="box" pos="0.79 0 0.95"  size="0.02 0.3 0.95" material="shelf"/> <!-- 右侧板 -->
+      <geom class="cabinet" type="box" pos="-0.79 0 0.95" size="0.02 0.3 0.95" material="shelf"/> <!-- 左侧板 -->
+      <!-- 三层内部挡板 -->
+      <geom class="cabinet" type="box" pos="0 -0.02 0.50" size="0.78 0.28 0.02" material="shelf"/>
+      <geom class="cabinet" type="box" pos="0 -0.02 0.95" size="0.78 0.28 0.02" material="shelf"/>
+      <geom class="cabinet" type="box" pos="0 -0.02 1.40" size="0.78 0.28 0.02" material="shelf"/>
+      <!-- 双开柜门（绕竖直 z 轴铰链可开闭，qpos=0 为关闭；可向 +y 前方打开至约 90°） -->
+      <!-- 左门：铰链位于 x=-0.79（贴左侧板前缘），绕 +z 转动，正方向朝 +y 前方打开 -->
+      <body name="cabinet_door_l" pos="-0.79 0.31 0.95">
+        <joint name="cabinet_door_l_j" type="hinge" axis="0 0 1"
+               range="0 1.7" damping="0.1" frictionloss="0.02"/>
+        <geom class="cabinet" name="cabinet_door_l_panel" type="box" pos="0.39 0.02 0"
+              size="0.39 0.015 0.9" material="metal" mass="2"/>
+        <!-- 把手：横向圆杆（长 20cm、直径 3cm），杆面距门面约 5cm 净空，便于整只手抓握 -->
+        <geom class="cabinet" name="cabinet_handle_l_bar" type="cylinder" pos="0.5 0.10 0"
+              euler="0 1.5708 0" size="0.015 0.1" material="metal"/>
+        <geom class="cabinet" name="cabinet_handle_l_s1" type="cylinder" pos="0.42 0.0675 0"
+              euler="1.5708 0 0" size="0.012 0.0325" material="metal"/>
+        <geom class="cabinet" name="cabinet_handle_l_s2" type="cylinder" pos="0.58 0.0675 0"
+              euler="1.5708 0 0" size="0.012 0.0325" material="metal"/>
+      </body>
+      <!-- 右门：铰链位于 x=0.79（贴右侧板前缘），绕 -z 转动，朝 +y 前方打开 -->
+      <body name="cabinet_door_r" pos="0.79 0.31 0.95">
+        <joint name="cabinet_door_r_j" type="hinge" axis="0 0 1"
+               range="-1.7 0" damping="0.1" frictionloss="0.02"/>
+        <geom class="cabinet" name="cabinet_door_r_panel" type="box" pos="-0.39 0.02 0"
+              size="0.39 0.015 0.9" material="metal" mass="2"/>
+        <geom class="cabinet" name="cabinet_handle_r_bar" type="cylinder" pos="-0.5 0.10 0"
+              euler="0 1.5708 0" size="0.015 0.1" material="metal"/>
+        <geom class="cabinet" name="cabinet_handle_r_s1" type="cylinder" pos="-0.42 0.0675 0"
+              euler="1.5708 0 0" size="0.012 0.0325" material="metal"/>
+        <geom class="cabinet" name="cabinet_handle_r_s2" type="cylinder" pos="-0.58 0.0675 0"
+              euler="1.5708 0 0" size="0.012 0.0325" material="metal"/>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>

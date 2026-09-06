@@ -1,0 +1,37 @@
+# Runtime contract for the existing ACT-40k checkpoint trained on the legacy
+# dual-RGB 30 FPS dataset. Do not use the 24 FPS RGB-D recorder config here.
+robot:
+  type: mujoco
+  id: rm65_dexhand_act_rgb30
+  scene_path: assets/scenes/rm65_dexhand_scene.xml
+  ee_site_name: link_6
+  arm_joint_names: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6]
+  gripper_joint_names:
+    [r_f_joint1_1, r_f_joint1_2, r_f_joint1_3, r_f_joint1_4,
+     r_f_joint2_1, r_f_joint2_2, r_f_joint2_3, r_f_joint2_4,
+     r_f_joint3_1, r_f_joint3_2, r_f_joint3_3, r_f_joint3_4,
+     r_f_joint4_1, r_f_joint4_2, r_f_joint4_3, r_f_joint4_4,
+     r_f_joint5_1, r_f_joint5_2, r_f_joint5_3, r_f_joint5_4]
+  cameras:
+    table_camera: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30}
+    wrist_overhead_camera: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30}
+  depth_camera_names: []
+  physics_dt: 0.001
+  control_fps: 30
+  show_viewer: true
+  show_camera_panel: true
+  show_mapping_markers: false
+  camera_panel_width: 960
+  camera_panel_height: 480
+  max_joint_step: 0.1
+  max_finger_step: 0.05
+  joint_limit_margin: 0.01
+  collision_check_enabled: true
+  collision_interpolation_steps: 10
+  controlled_deceleration_s: 0.20
+  randomize_screwdrivers: true
+  screwdriver_workspace_x: [-0.18, -0.03]
+  screwdriver_workspace_y: [-0.15, 0.15]
+  screwdriver_palm_front_offsets: [0.04, 0.22]
+  screwdriver_palm_right_offsets: [-0.20, 0.20]
+  screwdriver_y_axis_angle_deg: [-35.0, 35.0]

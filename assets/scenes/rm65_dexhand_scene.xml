@@ -1,76 +1,66 @@
 <mujoco model="rm65_dexhand_table_scene">
   <compiler angle="radian" />
   <asset>
-    <mesh name="base_link" content_type="model/stl" file="../arm/base_link.STL" />
-    <mesh name="link_1" content_type="model/stl" file="../arm/link_1.STL" />
-    <mesh name="link_2" content_type="model/stl" file="../arm/link_2.STL" />
-    <mesh name="link_3" content_type="model/stl" file="../arm/link_3.STL" />
-    <mesh name="link_4" content_type="model/stl" file="../arm/link_4.STL" />
-    <mesh name="link_5" content_type="model/stl" file="../arm/link_5.STL" />
-    <mesh name="link_6" content_type="model/stl" file="../arm/link_6.STL" />
-    <mesh name="dog_visual_0" content_type="model/stl" file="../dog/dog_visual_0.STL" scale="0.00025 0.00025 0.00025" />
-    <mesh name="dog_visual_1" content_type="model/stl" file="../dog/dog_visual_1.STL" scale="0.00025 0.00025 0.00025" />
-    <mesh name="dog_visual_2" content_type="model/stl" file="../dog/dog_visual_2.STL" scale="0.00025 0.00025 0.00025" />
-    <mesh name="dog_visual_3" content_type="model/stl" file="../dog/dog_visual_3.STL" scale="0.00025 0.00025 0.00025" />
-    <mesh name="dog_visual_4" content_type="model/stl" file="../dog/dog_visual_4.STL" scale="0.00025 0.00025 0.00025" />
-    <mesh name="dog_visual_5" content_type="model/stl" file="../dog/dog_visual_5.STL" scale="0.00025 0.00025 0.00025" />
-    <mesh name="right_hand_base" content_type="model/stl" file="../hand/right_hand_base.STL" />
-    <mesh name="r_f_link1_1" content_type="model/stl" file="../hand/r_f_link1_1.STL" />
-    <mesh name="r_f_link1_2" content_type="model/stl" file="../hand/r_f_link1_2.STL" />
-    <mesh name="r_f_link1_3" content_type="model/stl" file="../hand/r_f_link1_3.STL" />
-    <mesh name="r_f_link1_4" content_type="model/stl" file="../hand/r_f_link1_4.STL" />
-    <mesh name="r_f_link2_1" content_type="model/stl" file="../hand/r_f_link2_1.STL" />
-    <mesh name="r_f_link2_2" content_type="model/stl" file="../hand/r_f_link2_2.STL" />
-    <mesh name="r_f_link2_3" content_type="model/stl" file="../hand/r_f_link2_3.STL" />
-    <mesh name="r_f_link2_4" content_type="model/stl" file="../hand/r_f_link2_4.STL" />
-    <mesh name="r_f_link3_1" content_type="model/stl" file="../hand/r_f_link3_1.STL" />
-    <mesh name="r_f_link3_2" content_type="model/stl" file="../hand/r_f_link3_2.STL" />
-    <mesh name="r_f_link3_3" content_type="model/stl" file="../hand/r_f_link3_3.STL" />
-    <mesh name="r_f_link3_4" content_type="model/stl" file="../hand/r_f_link3_4.STL" />
-    <mesh name="r_f_link4_1" content_type="model/stl" file="../hand/r_f_link4_1.STL" />
-    <mesh name="r_f_link4_2" content_type="model/stl" file="../hand/r_f_link4_2.STL" />
-    <mesh name="r_f_link4_3" content_type="model/stl" file="../hand/r_f_link4_3.STL" />
-    <mesh name="r_f_link4_4" content_type="model/stl" file="../hand/r_f_link4_4.STL" />
-    <mesh name="r_f_link5_1" content_type="model/stl" file="../hand/r_f_link5_1.STL" />
-    <mesh name="r_f_link5_2" content_type="model/stl" file="../hand/r_f_link5_2.STL" />
-    <mesh name="r_f_link5_3" content_type="model/stl" file="../hand/r_f_link5_3.STL" />
-    <mesh name="r_f_link5_4" content_type="model/stl" file="../hand/r_f_link5_4.STL" />
+    <mesh name="base_link" file="../arm/base_link.STL" />
+    <mesh name="link_1" file="../arm/link_1.STL" />
+    <mesh name="link_2" file="../arm/link_2.STL" />
+    <mesh name="link_3" file="../arm/link_3.STL" />
+    <mesh name="link_4" file="../arm/link_4.STL" />
+    <mesh name="link_5" file="../arm/link_5.STL" />
+    <mesh name="link_6" file="../arm/link_6.STL" />
+    <mesh name="right_hand_base" file="../hand/right_hand_base.STL" />
+    <mesh name="r_f_link1_1" file="../hand/r_f_link1_1.STL" />
+    <mesh name="r_f_link1_2" file="../hand/r_f_link1_2.STL" />
+    <mesh name="r_f_link1_3" file="../hand/r_f_link1_3.STL" />
+    <mesh name="r_f_link1_4" file="../hand/r_f_link1_4.STL" />
+    <mesh name="r_f_link2_1" file="../hand/r_f_link2_1.STL" />
+    <mesh name="r_f_link2_2" file="../hand/r_f_link2_2.STL" />
+    <mesh name="r_f_link2_3" file="../hand/r_f_link2_3.STL" />
+    <mesh name="r_f_link2_4" file="../hand/r_f_link2_4.STL" />
+    <mesh name="r_f_link3_1" file="../hand/r_f_link3_1.STL" />
+    <mesh name="r_f_link3_2" file="../hand/r_f_link3_2.STL" />
+    <mesh name="r_f_link3_3" file="../hand/r_f_link3_3.STL" />
+    <mesh name="r_f_link3_4" file="../hand/r_f_link3_4.STL" />
+    <mesh name="r_f_link4_1" file="../hand/r_f_link4_1.STL" />
+    <mesh name="r_f_link4_2" file="../hand/r_f_link4_2.STL" />
+    <mesh name="r_f_link4_3" file="../hand/r_f_link4_3.STL" />
+    <mesh name="r_f_link4_4" file="../hand/r_f_link4_4.STL" />
+    <mesh name="r_f_link5_1" file="../hand/r_f_link5_1.STL" />
+    <mesh name="r_f_link5_2" file="../hand/r_f_link5_2.STL" />
+    <mesh name="r_f_link5_3" file="../hand/r_f_link5_3.STL" />
+    <mesh name="r_f_link5_4" file="../hand/r_f_link5_4.STL" />
     <mesh name="screwdriver_hex_handle" file="screwdriver_hex_handle.obj" />
   </asset>
   <worldbody>
     <light name="key" pos="2 -3 5" dir="-0.4 0.5 -1" directional="true" diffuse="0.8 0.8 0.78" specular="0.25 0.25 0.25" />
-    <camera name="table_camera" pos="-0.500 0.000 1.879" xyaxes="0.000000 -1.000000 0.000000 0.171341 0.000000 0.985212" fovy="70" />
-    <geom pos="-0.973259 -0.367309 1.22793" quat="1 0 0 0" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.32 0.34 0.38 1" mesh="dog_visual_0" />
-    <geom pos="-0.853259 -0.297309 1.16793" quat="1 0 0 0" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.32 0.34 0.38 1" mesh="dog_visual_1" />
-    <geom pos="-0.853259 -0.437309 1.16793" quat="1 0 0 0" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.32 0.34 0.38 1" mesh="dog_visual_2" />
-    <geom pos="-1.11326 -0.297309 1.15793" quat="1 0 0 0" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.32 0.34 0.38 1" mesh="dog_visual_3" />
-    <geom pos="-1.11326 -0.437309 1.15793" quat="1 0 0 0" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.32 0.34 0.38 1" mesh="dog_visual_4" />
-    <geom pos="-0.973259 -0.367309 1.32793" quat="1 0 0 0" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.32 0.34 0.38 1" mesh="dog_visual_5" />
-    <geom pos="-0.7 0 1.67908" quat="1 0 0 0" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="base_link" />
-    <geom pos="-0.7 0 1.67908" quat="1 0 0 0" type="mesh" rgba="1 1 1 1" mesh="base_link" />
-    <geom size="0.5 0.45 0.02" pos="-0.7 0 1.147" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.42 0.4 0.38 1" />
-    <geom size="0.5 0.45 0.02" pos="-0.7 0 1.147" type="box" rgba="0.42 0.4 0.38 1" />
-    <geom size="0.04 0.04 0.5635" pos="-1.15 -0.4 0.564" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.04 0.04 0.5635" pos="-1.15 -0.4 0.564" type="box" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.04 0.04 0.5635" pos="-0.25 -0.4 0.564" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.04 0.04 0.5635" pos="-0.25 -0.4 0.564" type="box" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.04 0.04 0.5635" pos="-1.15 0.4 0.564" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.04 0.04 0.5635" pos="-1.15 0.4 0.564" type="box" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.04 0.04 0.5635" pos="-0.25 0.4 0.564" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.04 0.04 0.5635" pos="-0.25 0.4 0.564" type="box" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.5 0.4 0.02" pos="0 0 1.759" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.5 0.45 0.4 1" />
-    <geom size="0.5 0.4 0.02" pos="0 0 1.759" type="box" rgba="0.5 0.45 0.4 1" />
-    <geom size="0.04 0.04 0.8695" pos="-0.45 -0.35 0.87" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.04 0.04 0.8695" pos="-0.45 -0.35 0.87" type="box" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.04 0.04 0.8695" pos="0.45 -0.35 0.87" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.04 0.04 0.8695" pos="0.45 -0.35 0.87" type="box" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.04 0.04 0.8695" pos="-0.45 0.35 0.87" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.04 0.04 0.8695" pos="-0.45 0.35 0.87" type="box" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.04 0.04 0.8695" pos="0.45 0.35 0.87" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.35 0.35 0.38 1" />
-    <geom size="0.04 0.04 0.8695" pos="0.45 0.35 0.87" type="box" rgba="0.35 0.35 0.38 1" />
+    <!-- Normal rectilinear table view: moderate FOV avoids the severe edge
+         stretching caused by the previous 145-degree wide-angle setup. -->
+    <camera name="table_camera" pos="-0.6502 0.1883 1.0314" fovy="70" quat="0.5371 0.2816 -0.3692 -0.7042"/>
+    <geom size="0.35 0.275 0.02" pos="-0.7 0 0.58" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.42 0.42 0.45 1" />
+    <geom size="0.35 0.275 0.02" pos="-0.7 0 0.58" type="box" rgba="0.42 0.42 0.45 1" />
+    <geom pos="-0.7 0 0.6" quat="1 0 0 0" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="base_link" />
+    <geom pos="-0.7 0 0.6" quat="1 0 0 0" type="mesh" rgba="1 1 1 1" mesh="base_link" />
+    <geom size="0.03 0.03 0.29" pos="-0.98 -0.22 0.29" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.32 0.32 0.35 1" />
+    <geom size="0.03 0.03 0.29" pos="-0.98 -0.22 0.29" type="box" rgba="0.32 0.32 0.35 1" />
+    <geom size="0.03 0.03 0.29" pos="-0.42 -0.22 0.29" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.32 0.32 0.35 1" />
+    <geom size="0.03 0.03 0.29" pos="-0.42 -0.22 0.29" type="box" rgba="0.32 0.32 0.35 1" />
+    <geom size="0.03 0.03 0.29" pos="-0.98 0.22 0.29" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.32 0.32 0.35 1" />
+    <geom size="0.03 0.03 0.29" pos="-0.98 0.22 0.29" type="box" rgba="0.32 0.32 0.35 1" />
+    <geom size="0.03 0.03 0.29" pos="-0.42 0.22 0.29" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.32 0.32 0.35 1" />
+    <geom size="0.03 0.03 0.29" pos="-0.42 0.22 0.29" type="box" rgba="0.32 0.32 0.35 1" />
+    <geom size="0.5 0.4 0.02" pos="0 0 0.68" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.5 0.45 0.4 1" />
+    <geom size="0.5 0.4 0.02" pos="0 0 0.68" type="box" rgba="0.5 0.45 0.4 1" name="work_table_collision" contype="2" conaffinity="1" />
+    <geom size="0.04 0.04 0.33" pos="-0.45 -0.35 0.33" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.35 0.35 0.38 1" />
+    <geom size="0.04 0.04 0.33" pos="-0.45 -0.35 0.33" type="box" rgba="0.35 0.35 0.38 1" />
+    <geom size="0.04 0.04 0.33" pos="0.45 -0.35 0.33" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.35 0.35 0.38 1" />
+    <geom size="0.04 0.04 0.33" pos="0.45 -0.35 0.33" type="box" rgba="0.35 0.35 0.38 1" />
+    <geom size="0.04 0.04 0.33" pos="-0.45 0.35 0.33" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.35 0.35 0.38 1" />
+    <geom size="0.04 0.04 0.33" pos="-0.45 0.35 0.33" type="box" rgba="0.35 0.35 0.38 1" />
+    <geom size="0.04 0.04 0.33" pos="0.45 0.35 0.33" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.35 0.35 0.38 1" />
+    <geom size="0.04 0.04 0.33" pos="0.45 0.35 0.33" type="box" rgba="0.35 0.35 0.38 1" />
     <geom size="6 6 0.01" pos="0 0 -0.01" type="box" contype="0" conaffinity="0" group="1" density="0" rgba="0.22 0.22 0.24 1" />
     <geom size="6 6 0.01" pos="0 0 -0.01" type="box" rgba="0.22 0.22 0.24 1" />
-    <body name="link_1" pos="-0.7 0 1.91958" gravcomp="1">
+    <body name="link_1" pos="-0.7 0 0.8405" gravcomp="1">
       <inertial pos="0.000941 0.007803 -0.10744" quat="0.997511 -0.0583785 0.00606547 -0.0390687" mass="1.51" diaginertia="0.00266445 0.00233888 0.00165429" />
       <joint name="joint_1" pos="0 0 0" axis="0 0 1" range="-3.10669 3.10669" actuatorfrcrange="-60 60" />
       <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="link_1" />
@@ -96,7 +86,7 @@
               <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="link_5" />
               <geom type="mesh" rgba="1 1 1 1" mesh="link_5" />
               <body name="link_6" pos="0 -0.1725 0" quat="0.707105 0.707108 0 0" gravcomp="1" childclass="hand_surface">
-                <camera name="wrist_overhead_camera" pos="0.020 0.001 0.017" xyaxes="-0.000000 -0.999977 -0.006718 -0.916905 -0.002681 0.399096" fovy="100" />
+                <camera name="wrist_overhead_camera" pos="0.0368 0.0031 0.0370" fovy="100"  quat="0.2123 0.6745 -0.6730 -0.2169"/>
                 <inertial pos="-0.00141947 0.000867221 0.0106428" quat="0.999404 -0.0014409 -0.0250084 -0.023732" mass="1.0288" diaginertia="0.00242559 0.00187781 0.0010631" />
                 <joint name="joint_6" pos="0 0 0" axis="0 0 1" range="-6.28319 6.28319" actuatorfrcrange="-10 10" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="link_6" />
@@ -250,8 +240,8 @@
         </body>
       </body>
     </body>
-    <body name="screwdriver_red" pos="-0.08 0.12 1.797" quat="0.819152 0 0 0.573576">
-      <joint name="world_to_screwdriver_red" type="free" />
+    <body name="screwdriver_red" pos="-0.08 0.12 0.718" quat="0.819152 0 0 0.573576">
+      <joint name="world_to_screwdriver_red" type="free" limited="false" actuatorfrclimited="false" />
       <geom pos="-0.04 0 0" quat="0.683013 0.183013 0.683013 0.183013" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.85 0.15 0.15 1" mesh="screwdriver_hex_handle" />
       <geom pos="-0.04 0 0" quat="0.683013 0.183013 0.683013 0.183013" type="mesh" rgba="0.85 0.15 0.15 1" mesh="screwdriver_hex_handle" />
       <geom size="0.006 0.1" pos="0.14 0 0" quat="0.707105 0 0.707108 0" type="cylinder" contype="0" conaffinity="0" group="1" density="0" rgba="0.65 0.65 0.7 1" />
@@ -300,6 +290,6 @@
     <position name="act_r_f_joint5_4" joint="r_f_joint5_4" kp="25" kv="2" ctrlrange="0 1.3" forcerange="-0.5 0.5" forcelimited="true" />
   </actuator>
   <keyframe>
-    <key name="home" qpos="0.000000 -0.401426 -1.727876 0.000000 0.471239 3.141593 0.872665 0.523599 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 -0.080000 0.120000 1.797000 0.819152 0.000000 0.000000 0.573576" ctrl="0.000000 -0.401426 -1.727876 0.000000 0.471239 3.141593 0.872665 0.523599 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000" />
+    <key name="home" qpos="0.000000 -0.401426 -1.727876 0.000000 0.471239 3.141593 0.872665 0.523599 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 -0.080000 0.120000 0.718000 0.819152 0.000000 0.000000 0.573576" ctrl="0.000000 -0.401426 -1.727876 0.000000 0.471239 3.141593 0.872665 0.523599 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000" />
   </keyframe>
 </mujoco>

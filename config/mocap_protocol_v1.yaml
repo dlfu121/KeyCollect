@@ -1,0 +1,30 @@
+# Governed motion-capture receiver profile. The publisher must emit:
+#   /right_wrist_pose   geometry_msgs/PoseStamped (metres, xyzw quaternion)
+#   /right_joint_states sensor_msgs/JointState (57 positions in radians)
+# JointState.header.frame_id must be exactly `keycollect-mocap-v1;unit=rad`;
+# each consumed JointState.name index must equal the semantic name declared in
+# system_contract.yaml:mocap_protocol.consumed_channels.
+type: mocap_ros
+wrist_topic: /right_wrist_pose
+joint_topic: /right_joint_states
+transport: auto
+protocol_version: keycollect-mocap-v1
+finger_unit: rad
+finger_message_type: joint_state
+require_finger_protocol_header: true
+control_fps: 24
+position_axis_map: [0, 0, 1, 1, 0, 0, 0, 1, 0]
+orientation_axis_map: [0, -1, 0, 0, 0, 1, -1, 0, 0]
+position_scale: 0.01
+orientation_scale: 0.4
+finger_scale: 1.0
+finger_filter_alpha: 0.45
+finger_deadband_rad: 0.003
+finger_outlier_threshold: 0.40
+pip_dip_coupling: 1.0
+finger_spread_coupling: [1.0, 1.0, 1.0]
+max_translation_speed_m_s: 0.12
+max_rotation_speed_rad_s: 0.96
+max_finger_speed_rad_s: 1.20
+stale_timeout_s: 0.25
+expected_joint_values: 57

@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "keycollect"
+version = "0.2.0"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "lerobot==0.6.1",
+  "mujoco==3.11.0",
+  "numpy==2.2.6",
+  "PyYAML==6.0.2",
+  "pyarrow==21.0.0",
+  "roslibpy==2.0.0",
+  "safetensors==0.6.2",
+]
+
+[dependency-groups]
+dev = ["pytest==8.4.2"]
+
+[tool.setuptools.packages.find]
+include = ["keycollect*"]
+
+[tool.pytest.ini_options]
+testpaths = ["rm65", "lerobot_teleoperator_mocap_ros/tests"]
+python_files = ["test_*.py"]

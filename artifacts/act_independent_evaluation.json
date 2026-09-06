@@ -1,0 +1,15 @@
+{
+  "status": "PENDING_MEASUREMENT",
+  "reason": "The 40000-step checkpoint was trained on all 127 episodes; no independent test episodes or fixed-task rollout results exist.",
+  "checkpoint_step": 40000,
+  "grasp_success_rate": "PENDING_MEASUREMENT",
+  "latency": "PENDING_MEASUREMENT",
+  "evaluation_protocol": "config/task_evaluation.yaml",
+  "evaluation_cases": "artifacts/evaluation_cases.jsonl",
+  "evaluation_case_count": 100,
+  "evaluator": "scripts/evaluate_act.py",
+  "smoke_result": "artifacts/act_evaluation_smoke/case_000/result.json",
+  "smoke_result_status": "smoke_incomplete",
+  "smoke_result_is_independent_evaluation": false,
+  "required_next_action": "Collect governed labels, retrain using artifacts/dataset_audit/split.json, then run fixed seeded rollouts on the untouched test set."
+}

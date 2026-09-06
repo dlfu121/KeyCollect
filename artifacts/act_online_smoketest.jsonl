@@ -1,0 +1,1 @@
+{"action_execution_time": 1788660224.255787, "configured_replan_steps": 10, "control_cycle_s": 1.415886605012929, "frame_index": 0, "inference_latency_s": 0.14528718299698085, "observation_time": 1788660224.096385, "prediction_requested": true, "preempt_reason": null, "preempted": false, "receive_time": 1788660222.839906, "source_time": 0.0}

@@ -1,0 +1,15 @@
+{
+  "source": "/home/nightflower/mujoco-3.10.0/model/worker_scene/ariac_source/ariac_gz/world/ariac.world",
+  "branch": "ariac2025",
+  "instances": 38,
+  "added_warehouse_instances": 2,
+  "source_meshes": 26,
+  "mesh_parts": 95,
+  "source_faces": 409722,
+  "faces": 406699,
+  "vertices": 1184988,
+  "simplified_parts": 2,
+  "visual_geoms": 231,
+  "collision_geoms": 49,
+  "skipped": []
+}

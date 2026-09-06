@@ -1,0 +1,44 @@
+{
+  "run_date": "2026-09-06",
+  "environment": {
+    "python": "3.12.13",
+    "mujoco": "3.11.0",
+    "lerobot": "0.6.1",
+    "render_backend": "osmesa"
+  },
+  "suites": [
+    {
+      "name": "rm65_analytic",
+      "tests": 6,
+      "passed": 6,
+      "failed": 0,
+      "log": "artifacts/test-results/rm65.log"
+    },
+    {
+      "name": "keycollect_integration",
+      "tests": 42,
+      "passed": 42,
+      "failed": 0,
+      "log": "artifacts/test-results/integration.log"
+    },
+    {
+      "name": "act_40k_online_smoke",
+      "steps": 1,
+      "passed": 1,
+      "failed": 0,
+      "runtime_log": "artifacts/act_online_smoketest.jsonl",
+      "scope": "Interface/startup/one-step smoke only; not a grasp-success or latency benchmark."
+    },
+    {
+      "name": "fixed_evaluation_case_smoke",
+      "steps": 1,
+      "passed": 1,
+      "failed": 0,
+      "result": "artifacts/act_evaluation_smoke/case_000/result.json",
+      "scope": "Evaluator wiring/video/result-schema smoke only; protocol duration was intentionally incomplete, success is null, and latency is not a benchmark."
+    }
+  ],
+  "total_unit_and_integration_tests": 48,
+  "total_unit_and_integration_passed": 48,
+  "independent_task_evaluation": "PENDING_MEASUREMENT"
+}

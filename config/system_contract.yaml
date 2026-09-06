@@ -1,0 +1,148 @@
+schema_version: 1
+project_policy: act
+
+geometry:
+  safe_reach_radius_m: 0.5405
+  base_height_m: 0.2405
+  theoretical_flange_radius_m: 0.6385
+  rm65_mdh:
+    a_m: [0.0, 0.0, 0.256, 0.0, 0.0, 0.0]
+    alpha_deg: [0.0, 90.0, 0.0, 90.0, -90.0, 90.0]
+    d_m: [0.2405, 0.0, 0.0, 0.210, 0.0, 0.1725]
+    joint_offset_deg: [0.0, 90.0, 90.0, 0.0, 0.0, 0.0]
+    joint_limits_deg: [[-178, 178], [-130, 130], [-135, 135], [-178, 178], [-128, 128], [-360, 360]]
+    d6_source_status: LOCAL_RM65_6F_URDF_CONFIRMED_PRIMARY_VENDOR_SOURCE_PENDING
+    d6_local_source: assets/arm/RM65-6F.urdf:381
+    d6_local_source_sha256: 44594bcb673a59565b6300d87c967f26c1839622241ba4d34dfe45225689355b
+  tcp_transform:
+    parent: link_6
+    child: dexhand_mount
+    xyz_m: [0.0, 0.0, -0.08]
+    rpy_rad: [0.0, 0.0, 0.0]
+  screwdriver_envelope_radius_m: 0.083
+  modeling_margin_m: 0.005
+  cartesian_margin_m: 0.010
+  arm_home_deg: [0.0, -23.0, -99.0, 0.0, 27.0, 180.0]
+  dexhand_home_deg: [50.0, 30.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  table_camera:
+    parent: world
+    position_m: [-0.500, 0.000, 1.879]
+    xyaxes: [0.000000, -1.000000, 0.000000, 0.171341, 0.000000, 0.985212]
+    fovy_deg: 70.0
+  wrist_overhead_camera:
+    parent: link_6
+    position_m: [0.020, 0.001, 0.017]
+    xyaxes: [-0.000000, -0.999977, -0.006718, -0.916905, -0.002681, 0.399096]
+    fovy_deg: 100.0
+
+timing:
+  mujoco_integration_step_s: 0.001
+  current_control_hz: 24
+  current_recording_fps: 24
+  current_policy_hz: 24
+  integration_substeps: fractional_accumulator_41_42_steps_at_24hz_and_33_33_34_at_30hz
+  legacy_rgb_recording_fps: 30
+  legacy_rgb_policy_hz: 30
+  mocap_nominal_hz: null  # Source publisher has no audited rate declaration yet.
+  stale_timeout_s: 0.25
+  timestamps: [source_time, receive_time, observation_time, action_execution_time]
+
+# Physical rates are converted to per-cycle limits at runtime. Never copy a
+# per-frame delta from the 30 FPS legacy dataset into a 24 Hz controller.
+motion_limits:
+  translation_m_s: 0.12
+  rotation_rad_s: 0.96
+  finger_rad_s: 1.20
+
+act:
+  schema_name_rgb: keycollect_act_rgb_v1
+  schema_name_rgbd: keycollect_act_rgbd_v1
+  state_dimension: 39
+  action_dimension: 26
+  ee_pose_frame: link_6
+  state_names:
+    [joint_1.pos, joint_2.pos, joint_3.pos, joint_4.pos, joint_5.pos, joint_6.pos,
+     joint_1.vel, joint_2.vel, joint_3.vel, joint_4.vel, joint_5.vel, joint_6.vel,
+     r_f_joint1_1.pos, r_f_joint1_2.pos, r_f_joint1_3.pos, r_f_joint1_4.pos,
+     r_f_joint2_1.pos, r_f_joint2_2.pos, r_f_joint2_3.pos, r_f_joint2_4.pos,
+     r_f_joint3_1.pos, r_f_joint3_2.pos, r_f_joint3_3.pos, r_f_joint3_4.pos,
+     r_f_joint4_1.pos, r_f_joint4_2.pos, r_f_joint4_3.pos, r_f_joint4_4.pos,
+     r_f_joint5_1.pos, r_f_joint5_2.pos, r_f_joint5_3.pos, r_f_joint5_4.pos,
+     ee_pose.x, ee_pose.y, ee_pose.z, ee_pose.qx, ee_pose.qy, ee_pose.qz, ee_pose.qw]
+  action_names:
+    [delta_x, delta_y, delta_z, delta_roll, delta_pitch, delta_yaw,
+     r_f_joint1_1.delta, r_f_joint1_2.delta, r_f_joint1_3.delta, r_f_joint1_4.delta,
+     r_f_joint2_1.delta, r_f_joint2_2.delta, r_f_joint2_3.delta, r_f_joint2_4.delta,
+     r_f_joint3_1.delta, r_f_joint3_2.delta, r_f_joint3_3.delta, r_f_joint3_4.delta,
+     r_f_joint4_1.delta, r_f_joint4_2.delta, r_f_joint4_3.delta, r_f_joint4_4.delta,
+     r_f_joint5_1.delta, r_f_joint5_2.delta, r_f_joint5_3.delta, r_f_joint5_4.delta]
+  rgb_cameras: [table_camera, wrist_overhead_camera]
+  rgb_format: uint8_hwc_srgb
+  policy_rgb_format: float32_chw_0_1
+  depth_camera: table_camera_depth
+  depth_format: float32_hwc_metric_z_distance_m
+  depth_definition: camera_forward_axis_distance_after_mujoco_depth_unprojection
+  depth_invalid_value: none_background_is_far_clip_distance
+  camera_intrinsics: derived_from_mjcf_fovy_and_render_width_height_with_square_pixels
+  state_units:
+    [rad, rad, rad, rad, rad, rad,
+     rad_s, rad_s, rad_s, rad_s, rad_s, rad_s,
+     rad, rad, rad, rad, rad, rad, rad, rad, rad, rad,
+     rad, rad, rad, rad, rad, rad, rad, rad, rad, rad,
+     m, m, m, unitless, unitless, unitless, unitless]
+  action_units:
+    [m_per_sample, m_per_sample, m_per_sample,
+     rad_per_sample, rad_per_sample, rad_per_sample,
+     rad_per_sample, rad_per_sample, rad_per_sample, rad_per_sample,
+     rad_per_sample, rad_per_sample, rad_per_sample, rad_per_sample,
+     rad_per_sample, rad_per_sample, rad_per_sample, rad_per_sample,
+     rad_per_sample, rad_per_sample, rad_per_sample, rad_per_sample,
+     rad_per_sample, rad_per_sample, rad_per_sample, rad_per_sample]
+  normalization: mean_std
+  chunk_size: 100
+  online_action_steps: 100
+  default_replan_steps: 10
+  preprocessor_chain: [rename_observations_processor, to_batch_processor, device_processor, normalizer_processor]
+  postprocessor_chain: [unnormalizer_processor, device_processor]
+
+mocap_protocol:
+  version: keycollect-mocap-v1
+  wrist_unit: metre_and_xyzw_quaternion
+  finger_unit: radian
+  joint_values: 57
+  # Explicit mapping for every consumed source channel. Sideways joints without
+  # an audited source are fixed and named as constraints, not simulated input.
+  consumed_channels:
+    thumb_rotation: 1
+    thumb_mcp: 5
+    thumb_dip: 8
+    index_mcp: 14
+    index_pip: 17
+    index_dip: 20
+    middle_mcp: 26
+    middle_pip: 29
+    middle_dip: 32
+    ring_mcp: 38
+    ring_pip: 41
+    ring_dip: 44
+    pinky_mcp: 50
+    pinky_pip: 53
+    pinky_dip: 56
+  fixed_constraints:
+    index_spread_rad: 0.0
+    middle_spread_rad: 0.0
+    ring_spread_rad: 0.0
+    pinky_spread_rad: 0.0
+
+tactile:
+  schema_name: keycollect_tactile_v1
+  feature_dimension: 40
+  act_state_dimension_with_tactile: 79
+  coordinate_frame: world
+  unit_force: N
+  unit_torque: N_m
+  per_finger_features: [normal_force, tangential_force_x, tangential_force_y, tangential_force_z, torque_x, torque_y, torque_z, contact_valid]
+  sampling_hz: 1000
+  dexhand_open_direction: [0, -1, -1, -1, 0, -1, -1, -1, 0, -1, -1, -1, 0, -1, -1, -1, 0, -1, -1, -1]
+  opening_direction_calibration_status: PENDING_HARDWARE_FORCE_CALIBRATION
+  policy_state_integration: pending_new_dataset_and_checkpoint
